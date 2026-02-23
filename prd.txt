@@ -1,6 +1,3 @@
-Great. Since you're handling **frontend**, I’ll generate a clean, professional **PRD (Product Requirements Document)** for **AskUni**, tailored to your project and MVP.
-
----
 
 # 📘 PRODUCT REQUIREMENTS DOCUMENT (PRD)
 
@@ -319,14 +316,4 @@ Here’s what you should focus on:
 * Responsive design
 * Fix UX issues
 
----
 
-If you want, I can now generate:
-
-* ✅ A full **Frontend Architecture Structure (folders + files)**
-* ✅ A **Database schema**
-* ✅ API endpoints documentation
-* ✅ Figma UI structure plan
-* ✅ A more professional “cahier des charges” version
-
-Tell me which one you want next.

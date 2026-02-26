@@ -7,24 +7,15 @@ import Button from '../../components/common/Button';
 import { HelpCircle, Plus } from 'lucide-react';
 
 export default function HomePage() {
-  const { questions, answers, modules, users } = useData();
+  const { questions, modules } = useData();
   const [selectedModule, setSelectedModule] = useState('');
 
-  const enrichedQuestions = useMemo(() => {
-    return questions.map((q) => {
-      const author = users.find((u) => u.id === q.authorId);
-      const module = modules.find((m) => m.id === q.moduleId);
-      const answerCount = answers.filter((a) => a.questionId === q.id).length;
-      return { question: q, author, module, answerCount };
-    });
-  }, [questions, answers, modules, users]);
-
   const filteredQuestions = useMemo(() => {
-    if (!selectedModule) return enrichedQuestions;
-    return enrichedQuestions.filter(
-      (item) => item.question.moduleId === Number(selectedModule)
+    if (!selectedModule) return questions;
+    return questions.filter(
+      (q) => q.module?.id === Number(selectedModule)
     );
-  }, [enrichedQuestions, selectedModule]);
+  }, [questions, selectedModule]);
 
   return (
     <div className="space-y-6">
@@ -55,13 +46,13 @@ export default function HomePage() {
 
       {filteredQuestions.length > 0 ? (
         <div className="space-y-3">
-          {filteredQuestions.map((item) => (
+          {filteredQuestions.map((q) => (
             <QuestionCard
-              key={item.question.id}
-              question={item.question}
-              author={item.author}
-              module={item.module}
-              answerCount={item.answerCount}
+              key={q.id}
+              question={q}
+              author={q.author}
+              module={q.module}
+              answerCount={q.answerCount || 0}
             />
           ))}
         </div>

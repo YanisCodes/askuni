@@ -26,18 +26,22 @@ export default function CreateSessionPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
-    addSession({
-      moduleId: Number(moduleId),
-      chapter,
-      date,
-      timeSlot,
-      maxParticipants: Number(maxParticipants),
-    });
-    navigate('/sessions');
+    try {
+      await addSession({
+        moduleId: Number(moduleId),
+        chapter,
+        date,
+        timeSlot,
+        maxParticipants: Number(maxParticipants),
+      });
+      navigate('/sessions');
+    } catch (err) {
+      setErrors({ general: err.response?.data?.detail || 'Failed to create session.' });
+    }
   };
 
   return (

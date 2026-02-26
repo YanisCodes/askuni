@@ -1,6 +1,8 @@
-import { MODULES } from '../../data/mockData';
+import { useData } from '../../contexts/DataContext';
 
 export default function ModuleSelector({ value, onChange, label = "Module" }) {
+  const { modules } = useData();
+
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -14,7 +16,7 @@ export default function ModuleSelector({ value, onChange, label = "Module" }) {
         <option value="" disabled>
           Select a module
         </option>
-        {MODULES.map(m => (
+        {modules.map(m => (
           <option key={m.id} value={m.id}>
             {m.name}
           </option>

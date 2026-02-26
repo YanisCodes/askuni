@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, Clock } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
@@ -8,8 +9,36 @@ import EmptyState from '../../components/common/EmptyState';
 export default function SessionDetailPage() {
   const { id } = useParams();
   const { getSessionWithDetails, joinSession, leaveSession } = useData();
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const session = getSessionWithDetails(Number(id));
+  const loadSession = useCallback(async () => {
+    const data = await getSessionWithDetails(Number(id));
+    setSession(data);
+    setLoading(false);
+  }, [id, getSessionWithDetails]);
+
+  useEffect(() => {
+    loadSession();
+  }, [loadSession]);
+
+  const handleJoin = async () => {
+    await joinSession(session.id);
+    loadSession();
+  };
+
+  const handleLeave = async () => {
+    await leaveSession(session.id);
+    loadSession();
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-sm text-gray-500">Loading...</p>
+      </div>
+    );
+  }
 
   if (!session) {
     return (
@@ -57,17 +86,17 @@ export default function SessionDetailPage() {
         <div className="border-t border-secondary-200 my-6" />
 
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Participants ({session.participantIds.length} / {session.maxParticipants})
+          Participants ({session.participantIds?.length || 0} / {session.maxParticipants})
         </h2>
 
         <div className="space-y-2 mb-6">
-          {session.participants.map(p => (
+          {(session.participants || []).map(p => (
             <div key={p.id} className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-medium">
                 {p.name[0].toUpperCase()}
               </div>
               <span className="text-sm text-gray-800">{p.name}</span>
-              {p.id === session.creatorId && (
+              {p.id === session.creator?.id && (
                 <Badge variant="gray">Creator</Badge>
               )}
             </div>
@@ -76,8 +105,8 @@ export default function SessionDetailPage() {
 
         <JoinButton
           session={session}
-          onJoin={() => joinSession(session.id)}
-          onLeave={() => leaveSession(session.id)}
+          onJoin={handleJoin}
+          onLeave={handleLeave}
         />
       </div>
     </div>

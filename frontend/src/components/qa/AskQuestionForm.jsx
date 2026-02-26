@@ -30,13 +30,13 @@ export default function AskQuestionForm({ onSuccess }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validate()) return;
 
     try {
-      const newQuestion = addQuestion({
+      const newQuestion = await addQuestion({
         title: title.trim(),
         description: description.trim(),
         moduleId: Number(moduleId),
@@ -46,7 +46,7 @@ export default function AskQuestionForm({ onSuccess }) {
         onSuccess(newQuestion);
       }
     } catch (err) {
-      setErrors({ general: err.message || 'Failed to post question.' });
+      setErrors({ general: err.response?.data?.detail || err.message || 'Failed to post question.' });
     }
   };
 

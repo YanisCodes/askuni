@@ -7,23 +7,13 @@ import EmptyState from '../../components/common/EmptyState';
 import SessionCard from '../../components/sessions/SessionCard';
 
 export default function BrowseSessionsPage() {
-  const { sessions, modules, users } = useData();
+  const { sessions, modules } = useData();
   const [filterModule, setFilterModule] = useState('');
 
-  const enrichedSessions = useMemo(() => {
-    return sessions
-      .filter(s => !filterModule || s.moduleId === Number(filterModule))
-      .map(session => {
-        const module = modules.find(m => m.id === session.moduleId);
-        const creator = users.find(u => u.id === session.creatorId);
-        return {
-          ...session,
-          moduleName: module?.name || 'Unknown',
-          creatorName: creator?.name || 'Unknown',
-          participantCount: session.participantIds.length,
-        };
-      });
-  }, [sessions, modules, users, filterModule]);
+  const filteredSessions = useMemo(() => {
+    if (!filterModule) return sessions;
+    return sessions.filter(s => s.module?.id === Number(filterModule));
+  }, [sessions, filterModule]);
 
   return (
     <div>
@@ -47,9 +37,9 @@ export default function BrowseSessionsPage() {
         </select>
       </div>
 
-      {enrichedSessions.length > 0 ? (
+      {filteredSessions.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {enrichedSessions.map(session => (
+          {filteredSessions.map(session => (
             <SessionCard key={session.id} session={session} />
           ))}
         </div>

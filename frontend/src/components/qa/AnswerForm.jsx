@@ -3,12 +3,12 @@ import { useData } from '../../contexts/DataContext';
 import Button from '../common/Button';
 import { Send } from 'lucide-react';
 
-export default function AnswerForm({ questionId }) {
+export default function AnswerForm({ questionId, onAnswerAdded }) {
   const { addAnswer } = useData();
   const [content, setContent] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -18,10 +18,11 @@ export default function AnswerForm({ questionId }) {
     }
 
     try {
-      addAnswer(questionId, { content: content.trim() });
+      await addAnswer(questionId, { content: content.trim() });
       setContent('');
+      if (onAnswerAdded) onAnswerAdded();
     } catch (err) {
-      setError(err.message || 'Failed to post answer.');
+      setError(err.response?.data?.detail || err.message || 'Failed to post answer.');
     }
   };
 

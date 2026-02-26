@@ -1,57 +1,98 @@
-export function loginUser(email, password, users) {
-  const user = users.find(u => u.email === email);
-  if (!user) {
-    throw new Error("Invalid credentials");
-  }
-  return user;
+import apiClient from './apiClient';
+
+// ---- Auth ----
+export async function loginUser(email, password) {
+  const { data } = await apiClient.post('/login/', { email, password });
+  return data;
 }
 
-export function registerUser(name, email, password, users) {
-  const existing = users.find(u => u.email === email);
-  if (existing) {
-    throw new Error("Email already registered");
-  }
-  return { id: Date.now(), name, email, avatar: null };
+export async function registerUser(name, email, password) {
+  const { data } = await apiClient.post('/register/', { name, email, password });
+  return data;
 }
 
-export function createQuestion({ title, description, moduleId, authorId }) {
-  return {
-    id: Date.now(),
-    title,
-    description,
-    moduleId,
-    authorId,
-    createdAt: new Date().toISOString(),
-  };
+export async function fetchProfile() {
+  const { data } = await apiClient.get('/profile/');
+  return data;
 }
 
-export function createAnswer({ questionId, content, authorId }) {
-  return {
-    id: Date.now(),
-    questionId,
-    content,
-    authorId,
-    createdAt: new Date().toISOString(),
-  };
+// ---- Modules ----
+export async function fetchModules() {
+  const { data } = await apiClient.get('/modules/');
+  return data;
 }
 
-export function createSession({ moduleId, chapter, date, timeSlot, creatorId, maxParticipants }) {
-  return {
-    id: Date.now(),
-    moduleId,
-    chapter: chapter || "",
-    date,
-    timeSlot,
-    creatorId,
-    participantIds: [creatorId],
-    maxParticipants: maxParticipants || 5,
-  };
+// ---- Questions ----
+export async function fetchQuestions() {
+  const { data } = await apiClient.get('/questions/');
+  return data;
 }
 
-export function getStudyRecommendations(moduleId, selectedSlots, sessions, resources) {
-  const suggestedSessions = sessions.filter(
-    s => s.moduleId === moduleId && selectedSlots.includes(s.timeSlot)
-  );
-  const resource = resources.find(r => r.moduleId === moduleId) || null;
-  return { suggestedSessions, resource };
+export async function fetchQuestionDetail(id) {
+  const { data } = await apiClient.get(`/questions/${id}/`);
+  return data;
+}
+
+export async function createQuestion({ title, description, moduleId }) {
+  const { data } = await apiClient.post('/questions/', { title, description, moduleId });
+  return data;
+}
+
+export async function createAnswer(questionId, { content }) {
+  const { data } = await apiClient.post(`/questions/${questionId}/answer/`, { content });
+  return data;
+}
+
+// ---- Sessions ----
+export async function fetchSessions() {
+  const { data } = await apiClient.get('/sessions/');
+  return data;
+}
+
+export async function fetchSessionDetail(id) {
+  const { data } = await apiClient.get(`/sessions/${id}/`);
+  return data;
+}
+
+export async function createSession({ moduleId, chapter, date, timeSlot, maxParticipants }) {
+  const { data } = await apiClient.post('/sessions/', { moduleId, chapter, date, timeSlot, maxParticipants });
+  return data;
+}
+
+export async function joinSession(id) {
+  const { data } = await apiClient.post(`/sessions/${id}/join/`);
+  return data;
+}
+
+export async function leaveSession(id) {
+  const { data } = await apiClient.post(`/sessions/${id}/leave/`);
+  return data;
+}
+
+// ---- Notifications ----
+export async function fetchNotifications() {
+  const { data } = await apiClient.get('/notifications/');
+  return data;
+}
+
+export async function markNotificationRead(id) {
+  const { data } = await apiClient.patch(`/notifications/${id}/`, { isRead: true });
+  return data;
+}
+
+export async function markAllNotificationsRead() {
+  const { data } = await apiClient.post('/notifications/read-all/');
+  return data;
+}
+
+// ---- Planner ----
+export async function fetchSuggestions(moduleId, timeSlots) {
+  const { data } = await apiClient.post('/planner/suggest/', { moduleId, timeSlots });
+  return data;
+}
+
+// ---- Resources ----
+export async function fetchResources() {
+  const { data } = await apiClient.get('/resources/');
+  return data;
 }

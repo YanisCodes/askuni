@@ -1,4 +1,4 @@
-import { TIME_SLOTS } from '../../data/mockData';
+import { TIME_SLOTS } from '../../data/constants';
 
 export default function TimePicker({ value, onChange }) {
   return (

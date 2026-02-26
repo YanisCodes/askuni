@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useData } from '../../contexts/DataContext';
 import AnswerCard from '../../components/qa/AnswerCard';
@@ -9,8 +10,26 @@ import { ArrowLeft, User, MessageSquare } from 'lucide-react';
 export default function QuestionDetailPage() {
   const { id } = useParams();
   const { getQuestionWithDetails } = useData();
+  const [question, setQuestion] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const question = getQuestionWithDetails(Number(id));
+  const loadQuestion = useCallback(async () => {
+    const data = await getQuestionWithDetails(Number(id));
+    setQuestion(data);
+    setLoading(false);
+  }, [id, getQuestionWithDetails]);
+
+  useEffect(() => {
+    loadQuestion();
+  }, [loadQuestion]);
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-sm text-gray-500">Loading...</p>
+      </div>
+    );
+  }
 
   if (!question) {
     return (
@@ -74,7 +93,7 @@ export default function QuestionDetailPage() {
         <p className="text-sm text-gray-500 py-4">No answers yet. Be the first to help!</p>
       )}
 
-      <AnswerForm questionId={question.id} />
+      <AnswerForm questionId={question.id} onAnswerAdded={loadQuestion} />
     </div>
   );
 }

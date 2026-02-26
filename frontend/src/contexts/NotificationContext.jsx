@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from '../services/api';
+import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext(null);
 
@@ -11,29 +13,51 @@ export function useNotifications() {
 }
 
 export function NotificationProvider({ children }) {
+  const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState([]);
+  const intervalRef = useRef(null);
 
-  const addNotification = useCallback((message, questionId) => {
-    const newNotification = {
-      id: Date.now(),
-      message,
-      questionId,
-      isRead: false,
-      createdAt: new Date().toISOString(),
+  const loadNotifications = useCallback(async () => {
+    try {
+      const data = await fetchNotifications();
+      setNotifications(data);
+    } catch {
+      // silently fail
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadNotifications();
+      intervalRef.current = setInterval(loadNotifications, 30000);
+    } else {
+      setNotifications([]);
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
-    setNotifications(prev => [newNotification, ...prev]);
+  }, [isAuthenticated, loadNotifications]);
+
+  const markAsRead = useCallback(async (id) => {
+    try {
+      await markNotificationRead(id);
+      setNotifications(prev =>
+        prev.map(n => (n.id === id ? { ...n, isRead: true } : n))
+      );
+    } catch {
+      // silently fail
+    }
   }, []);
 
-  const markAsRead = useCallback((id) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, isRead: true } : n))
-    );
-  }, []);
-
-  const markAllAsRead = useCallback(() => {
-    setNotifications(prev =>
-      prev.map(n => ({ ...n, isRead: true }))
-    );
+  const markAllAsRead = useCallback(async () => {
+    try {
+      await markAllNotificationsRead();
+      setNotifications(prev =>
+        prev.map(n => ({ ...n, isRead: true }))
+      );
+    } catch {
+      // silently fail
+    }
   }, []);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -41,9 +65,9 @@ export function NotificationProvider({ children }) {
   const value = {
     notifications,
     unreadCount,
-    addNotification,
     markAsRead,
     markAllAsRead,
+    refreshNotifications: loadNotifications,
   };
 
   return (

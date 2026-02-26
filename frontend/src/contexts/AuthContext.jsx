@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react';
 import { loginUser, registerUser } from '../services/api';
-import { USERS } from '../data/mockData';
 
 const AuthContext = createContext(null);
 
@@ -22,28 +21,29 @@ export function AuthProvider({ children }) {
     }
   });
 
-  const [registeredUsers, setRegisteredUsers] = useState([]);
-
   const login = useCallback(async (email, password) => {
-    const allUsers = [...USERS, ...registeredUsers];
-    const loggedInUser = loginUser(email, password, allUsers);
-    setUser(loggedInUser);
-    localStorage.setItem('askuni_user', JSON.stringify(loggedInUser));
-    return loggedInUser;
-  }, [registeredUsers]);
+    const data = await loginUser(email, password);
+    localStorage.setItem('askuni_access_token', data.access);
+    localStorage.setItem('askuni_refresh_token', data.refresh);
+    localStorage.setItem('askuni_user', JSON.stringify(data.user));
+    setUser(data.user);
+    return data.user;
+  }, []);
 
   const register = useCallback(async (name, email, password) => {
-    const allUsers = [...USERS, ...registeredUsers];
-    const newUser = registerUser(name, email, password, allUsers);
-    setRegisteredUsers(prev => [...prev, newUser]);
-    setUser(newUser);
-    localStorage.setItem('askuni_user', JSON.stringify(newUser));
-    return newUser;
-  }, [registeredUsers]);
+    const data = await registerUser(name, email, password);
+    localStorage.setItem('askuni_access_token', data.access);
+    localStorage.setItem('askuni_refresh_token', data.refresh);
+    localStorage.setItem('askuni_user', JSON.stringify(data.user));
+    setUser(data.user);
+    return data.user;
+  }, []);
 
   const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem('askuni_user');
+    localStorage.removeItem('askuni_access_token');
+    localStorage.removeItem('askuni_refresh_token');
   }, []);
 
   const isAuthenticated = user !== null;

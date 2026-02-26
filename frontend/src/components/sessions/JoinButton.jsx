@@ -11,7 +11,7 @@ export default function JoinButton({ session, onJoin, onLeave }) {
     action();
   };
 
-  if (user.id === session.creatorId) {
+  if (user.id === session.creator?.id) {
     return <Badge variant="gray">Your Session</Badge>;
   }
 

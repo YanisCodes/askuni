@@ -1,4 +1,4 @@
-import { TIME_SLOTS } from '../../data/mockData';
+import { TIME_SLOTS } from '../../data/constants';
 
 export default function TimeSlotSelector({ selectedSlots, onChange }) {
   const toggleSlot = (slot) => {

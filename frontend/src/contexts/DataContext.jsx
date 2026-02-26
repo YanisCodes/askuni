@@ -1,17 +1,17 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { TIME_SLOTS } from '../data/constants';
 import {
-  INITIAL_QUESTIONS,
-  INITIAL_ANSWERS,
-  INITIAL_SESSIONS,
-  MODULES,
-  RESOURCES,
-  USERS,
-  TIME_SLOTS,
-} from '../data/mockData';
-import {
+  fetchModules,
+  fetchResources,
+  fetchQuestions,
+  fetchQuestionDetail,
+  fetchSessions,
+  fetchSessionDetail,
   createQuestion,
   createAnswer,
   createSession,
+  joinSession as apiJoinSession,
+  leaveSession as apiLeaveSession,
 } from '../services/api';
 import { useAuth } from './AuthContext';
 import { useNotifications } from './NotificationContext';
@@ -27,133 +27,100 @@ export function useData() {
 }
 
 export function DataProvider({ children }) {
-  const { user } = useAuth();
-  const { addNotification } = useNotifications();
+  const { isAuthenticated } = useAuth();
+  const { refreshNotifications } = useNotifications();
 
-  const [questions, setQuestions] = useState(INITIAL_QUESTIONS);
-  const [answers, setAnswers] = useState(INITIAL_ANSWERS);
-  const [sessions, setSessions] = useState(INITIAL_SESSIONS);
+  const [modules, setModules] = useState([]);
+  const [resources, setResources] = useState([]);
+  const [questions, setQuestions] = useState([]);
+  const [sessions, setSessions] = useState([]);
 
-  const addQuestion = useCallback(({ title, description, moduleId }) => {
-    const newQuestion = createQuestion({
-      title,
-      description,
-      moduleId,
-      authorId: user.id,
-    });
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchModules().then(setModules).catch(() => {});
+      fetchResources().then(setResources).catch(() => {});
+      fetchQuestions().then(setQuestions).catch(() => {});
+      fetchSessions().then(setSessions).catch(() => {});
+    }
+  }, [isAuthenticated]);
+
+  const refreshQuestions = useCallback(async () => {
+    try {
+      const data = await fetchQuestions();
+      setQuestions(data);
+    } catch { /* */ }
+  }, []);
+
+  const refreshSessions = useCallback(async () => {
+    try {
+      const data = await fetchSessions();
+      setSessions(data);
+    } catch { /* */ }
+  }, []);
+
+  const addQuestion = useCallback(async ({ title, description, moduleId }) => {
+    const newQuestion = await createQuestion({ title, description, moduleId });
     setQuestions(prev => [newQuestion, ...prev]);
     return newQuestion;
-  }, [user]);
+  }, []);
 
-  const addAnswer = useCallback((questionId, { content }) => {
-    const newAnswer = createAnswer({
-      questionId,
-      content,
-      authorId: user.id,
-    });
-    setAnswers(prev => [newAnswer, ...prev]);
-
-    const question = questions.find(q => q.id === questionId);
-    if (question && question.authorId !== user.id) {
-      addNotification(`${user.name} answered your question`, questionId);
-    }
-
+  const addAnswer = useCallback(async (questionId, { content }) => {
+    const newAnswer = await createAnswer(questionId, { content });
+    // Refresh notifications since backend auto-creates them
+    refreshNotifications();
     return newAnswer;
-  }, [user, questions, addNotification]);
+  }, [refreshNotifications]);
 
-  const addSession = useCallback(({ moduleId, chapter, date, timeSlot, maxParticipants }) => {
-    const newSession = createSession({
-      moduleId,
-      chapter,
-      date,
-      timeSlot,
-      maxParticipants,
-      creatorId: user.id,
-    });
+  const addSession = useCallback(async ({ moduleId, chapter, date, timeSlot, maxParticipants }) => {
+    const newSession = await createSession({ moduleId, chapter, date, timeSlot, maxParticipants });
     setSessions(prev => [newSession, ...prev]);
     return newSession;
-  }, [user]);
+  }, []);
 
-  const joinSession = useCallback((sessionId) => {
-    setSessions(prev =>
-      prev.map(session => {
-        if (session.id !== sessionId) return session;
-        if (session.participantIds.includes(user.id)) return session;
-        if (session.participantIds.length >= session.maxParticipants) return session;
-        return {
-          ...session,
-          participantIds: [...session.participantIds, user.id],
-        };
-      })
-    );
-  }, [user]);
+  const joinSessionAction = useCallback(async (sessionId) => {
+    const updated = await apiJoinSession(sessionId);
+    setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, participantIds: updated.participantIds } : s));
+    refreshNotifications();
+    return updated;
+  }, [refreshNotifications]);
 
-  const leaveSession = useCallback((sessionId) => {
-    setSessions(prev =>
-      prev.map(session => {
-        if (session.id !== sessionId) return session;
-        return {
-          ...session,
-          participantIds: session.participantIds.filter(id => id !== user.id),
-        };
-      })
-    );
-  }, [user]);
+  const leaveSessionAction = useCallback(async (sessionId) => {
+    const updated = await apiLeaveSession(sessionId);
+    setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, participantIds: updated.participantIds } : s));
+    return updated;
+  }, []);
 
-  const getQuestionWithDetails = useCallback((questionId) => {
-    const question = questions.find(q => q.id === questionId);
-    if (!question) return null;
+  const getQuestionWithDetails = useCallback(async (questionId) => {
+    try {
+      return await fetchQuestionDetail(questionId);
+    } catch {
+      return null;
+    }
+  }, []);
 
-    const author = USERS.find(u => u.id === question.authorId);
-    const module = MODULES.find(m => m.id === question.moduleId);
-    const questionAnswers = answers
-      .filter(a => a.questionId === questionId)
-      .map(answer => ({
-        ...answer,
-        author: USERS.find(u => u.id === answer.authorId),
-      }));
-
-    return {
-      ...question,
-      author,
-      module,
-      answers: questionAnswers,
-    };
-  }, [questions, answers]);
-
-  const getSessionWithDetails = useCallback((sessionId) => {
-    const session = sessions.find(s => s.id === sessionId);
-    if (!session) return null;
-
-    const module = MODULES.find(m => m.id === session.moduleId);
-    const creator = USERS.find(u => u.id === session.creatorId);
-    const participants = session.participantIds
-      .map(id => USERS.find(u => u.id === id))
-      .filter(Boolean);
-
-    return {
-      ...session,
-      module,
-      creator,
-      participants,
-    };
-  }, [sessions]);
+  const getSessionWithDetails = useCallback(async (sessionId) => {
+    try {
+      return await fetchSessionDetail(sessionId);
+    } catch {
+      return null;
+    }
+  }, []);
 
   const value = {
     questions,
-    answers,
     sessions,
-    modules: MODULES,
-    resources: RESOURCES,
-    users: USERS,
+    modules,
+    resources,
     timeSlots: TIME_SLOTS,
     addQuestion,
     addAnswer,
     addSession,
-    joinSession,
-    leaveSession,
+    joinSession: joinSessionAction,
+    leaveSession: leaveSessionAction,
     getQuestionWithDetails,
     getSessionWithDetails,
+    refreshQuestions,
+    refreshSessions,
   };
 
   return (

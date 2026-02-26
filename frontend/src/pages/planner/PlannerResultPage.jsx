@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation, Navigate, Link } from 'react-router-dom';
 import { Users } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
-import { getStudyRecommendations } from '../../services/api';
+import { fetchSuggestions } from '../../services/api';
 import Button from '../../components/common/Button';
 import EmptyState from '../../components/common/EmptyState';
 import SessionCard from '../../components/sessions/SessionCard';
@@ -10,7 +10,10 @@ import RecommendationCard from '../../components/planner/RecommendationCard';
 
 export default function PlannerResultPage() {
   const location = useLocation();
-  const { sessions, modules, resources, users } = useData();
+  const { modules } = useData();
+  const [suggestedSessions, setSuggestedSessions] = useState([]);
+  const [resource, setResource] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   if (!location.state) {
     return <Navigate to="/planner" replace />;
@@ -23,22 +26,28 @@ export default function PlannerResultPage() {
     return mod?.name || 'Unknown';
   }, [modules, moduleId]);
 
-  const { suggestedSessions, resource } = useMemo(() => {
-    return getStudyRecommendations(moduleId, timeSlots, sessions, resources);
-  }, [moduleId, timeSlots, sessions, resources]);
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await fetchSuggestions(moduleId, timeSlots);
+        setSuggestedSessions(data.suggestedSessions || []);
+        setResource(data.resource || null);
+      } catch {
+        setSuggestedSessions([]);
+        setResource(null);
+      }
+      setLoading(false);
+    }
+    load();
+  }, [moduleId, timeSlots]);
 
-  const enrichedSessions = useMemo(() => {
-    return suggestedSessions.map(session => {
-      const module = modules.find(m => m.id === session.moduleId);
-      const creator = users.find(u => u.id === session.creatorId);
-      return {
-        ...session,
-        moduleName: module?.name || 'Unknown',
-        creatorName: creator?.name || 'Unknown',
-        participantCount: session.participantIds.length,
-      };
-    });
-  }, [suggestedSessions, modules, users]);
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-sm text-gray-500">Loading recommendations...</p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -53,9 +62,9 @@ export default function PlannerResultPage() {
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Matching Study Sessions
         </h2>
-        {enrichedSessions.length > 0 ? (
+        {suggestedSessions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {enrichedSessions.map(session => (
+            {suggestedSessions.map(session => (
               <SessionCard key={session.id} session={session} />
             ))}
           </div>

@@ -55,7 +55,7 @@ export default function RegisterPage() {
       await register(name, email, password);
       navigate('/');
     } catch (err) {
-      setGeneralError(err.message || 'Registration failed. Please try again.');
+      setGeneralError(err.response?.data?.detail || err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }

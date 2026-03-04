@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: askuni-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: ./build.sh
+    startCommand: gunicorn askuni.wsgi:application
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: FRONTEND_URL
+        sync: false

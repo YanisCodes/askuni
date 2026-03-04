@@ -16,10 +16,10 @@ export default function TimeSlotSelector({ selectedSlots, onChange }) {
           key={slot}
           type="button"
           onClick={() => toggleSlot(slot)}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
             selectedSlots.includes(slot)
-              ? 'bg-primary-600 text-white'
-              : 'bg-white border border-secondary-300 text-gray-700 hover:bg-secondary-50'
+              ? 'bg-slate-800 text-white shadow-sm'
+              : 'glass text-slate-600 hover:text-slate-800'
           }`}
         >
           {slot}

@@ -18,17 +18,17 @@ export default function BrowseSessionsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Study Sessions</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Study Sessions</h1>
         <Link to="/sessions/create">
           <Button>Create Session</Button>
         </Link>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-5">
         <select
           value={filterModule}
           onChange={(e) => setFilterModule(e.target.value)}
-          className="rounded-lg border border-secondary-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+          className="select-glass"
         >
           <option value="">All Modules</option>
           {modules.map(m => (
@@ -38,7 +38,7 @@ export default function BrowseSessionsPage() {
       </div>
 
       {filteredSessions.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 stagger-children">
           {filteredSessions.map(session => (
             <SessionCard key={session.id} session={session} />
           ))}

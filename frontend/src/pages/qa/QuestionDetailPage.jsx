@@ -25,18 +25,23 @@ export default function QuestionDetailPage() {
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <p className="text-sm text-gray-500">Loading...</p>
+      <div className="space-y-4">
+        <div className="h-4 w-32 rounded-lg animate-shimmer" />
+        <div className="glass rounded-2xl p-6 space-y-3">
+          <div className="h-4 w-24 rounded-lg animate-shimmer" />
+          <div className="h-6 w-3/4 rounded-lg animate-shimmer" />
+          <div className="h-20 w-full rounded-lg animate-shimmer" />
+        </div>
       </div>
     );
   }
 
   if (!question) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-lg font-medium text-gray-900">Question not found</h2>
-        <p className="text-sm text-gray-500 mt-1">This question may have been removed.</p>
-        <Link to="/" className="text-primary-600 text-sm font-medium hover:text-primary-700 mt-4 inline-block">
+      <div className="text-center py-16 animate-fade-in-up">
+        <h2 className="text-lg font-semibold text-slate-800">Question not found</h2>
+        <p className="text-sm text-slate-400 mt-1">This question may have been removed.</p>
+        <Link to="/" className="text-slate-600 text-sm font-medium hover:text-slate-800 mt-4 inline-block transition-colors">
           Back to Questions
         </Link>
       </div>
@@ -47,50 +52,50 @@ export default function QuestionDetailPage() {
     <div className="space-y-6">
       <Link
         to="/"
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary-600 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 transition-colors"
       >
         <ArrowLeft size={16} />
         Back to Questions
       </Link>
 
-      <div className="bg-white rounded-xl border border-secondary-200 p-6">
+      <div className="glass-strong rounded-2xl p-6 animate-fade-in-up">
         <div className="flex items-center gap-3 mb-3 flex-wrap">
           {question.module && (
             <Badge variant="blue">{question.module.code}</Badge>
           )}
-          <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+          <span className="inline-flex items-center gap-1 text-xs text-slate-400">
             <User size={12} />
             {question.author ? question.author.name : 'Unknown'}
           </span>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-slate-300">
             {formatRelativeTime(question.createdAt)}
           </span>
         </div>
 
-        <h1 className="text-xl font-bold text-gray-900 mb-3">
+        <h1 className="text-xl font-bold text-slate-800 mb-3">
           {question.title}
         </h1>
 
-        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
           {question.description}
         </p>
       </div>
 
       <div className="flex items-center gap-2">
-        <MessageSquare size={18} className="text-gray-500" />
-        <h2 className="text-base font-semibold text-gray-900">
+        <MessageSquare size={18} className="text-slate-400" />
+        <h2 className="text-base font-semibold text-slate-700">
           {question.answers.length} {question.answers.length === 1 ? 'Answer' : 'Answers'}
         </h2>
       </div>
 
       {question.answers.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-3 stagger-children">
           {question.answers.map((answer) => (
             <AnswerCard key={answer.id} answer={answer} />
           ))}
         </div>
       ) : (
-        <p className="text-sm text-gray-500 py-4">No answers yet. Be the first to help!</p>
+        <p className="text-sm text-slate-400 py-4">No answers yet. Be the first to help!</p>
       )}
 
       <AnswerForm questionId={question.id} onAnswerAdded={loadQuestion} />

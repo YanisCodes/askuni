@@ -13,15 +13,15 @@ export default function AskQuestionPage() {
     <div className="space-y-6">
       <Link
         to="/"
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary-600 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 transition-colors"
       >
         <ArrowLeft size={16} />
         Back to Questions
       </Link>
 
       <div>
-        <h1 className="text-xl font-bold text-gray-900">Ask a Question</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-xl font-bold text-slate-800">Ask a Question</h1>
+        <p className="text-sm text-slate-400 mt-1">
           Share your question with fellow students and get help.
         </p>
       </div>

@@ -7,32 +7,32 @@ export default function Navbar({ onToggleSidebar }) {
   const { user, logout } = useAuth();
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-secondary-200 z-30 flex items-center justify-between px-4">
+    <header className="fixed top-0 left-0 right-0 h-16 glass-strong z-30 flex items-center justify-between px-5">
       <div className="flex items-center gap-3">
         <button
           onClick={onToggleSidebar}
-          className="lg:hidden p-2 rounded-lg hover:bg-secondary-100 text-gray-600"
+          className="lg:hidden p-2 rounded-xl hover:bg-white/50 text-slate-500 transition-colors"
         >
           <Menu size={20} />
         </button>
-        <Link to="/" className="text-xl font-bold text-primary-700 no-underline">
+        <Link to="/" className="text-xl font-bold text-slate-800 no-underline tracking-tight">
           AskUni
         </Link>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <NotificationDropdown />
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-sm font-medium">
+        <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200/60">
+          <div className="w-8 h-8 rounded-lg bg-slate-700 text-white flex items-center justify-center text-sm font-medium">
             {user?.name?.[0]?.toUpperCase()}
           </div>
-          <span className="hidden sm:block text-sm font-medium text-gray-700">
+          <span className="hidden sm:block text-sm font-medium text-slate-600">
             {user?.name}
           </span>
         </div>
         <button
           onClick={logout}
-          className="p-2 rounded-lg hover:bg-secondary-100 text-gray-600"
+          className="p-2 rounded-xl hover:bg-white/50 text-slate-400 hover:text-slate-600 transition-colors"
           title="Logout"
         >
           <LogOut size={18} />

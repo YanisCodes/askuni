@@ -34,8 +34,13 @@ export default function SessionDetailPage() {
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <p className="text-sm text-gray-500">Loading...</p>
+      <div className="space-y-4">
+        <div className="h-4 w-32 rounded-lg animate-shimmer" />
+        <div className="glass rounded-2xl p-6 space-y-3">
+          <div className="h-4 w-40 rounded-lg animate-shimmer" />
+          <div className="h-4 w-56 rounded-lg animate-shimmer" />
+          <div className="h-32 w-full rounded-lg animate-shimmer" />
+        </div>
       </div>
     );
   }
@@ -45,7 +50,7 @@ export default function SessionDetailPage() {
       <EmptyState
         title="Session not found"
         description="This study session doesn't exist."
-        action={<Link to="/sessions" className="text-primary-600 hover:text-primary-700 font-medium no-underline">Back to Sessions</Link>}
+        action={<Link to="/sessions" className="text-slate-600 hover:text-slate-800 font-medium no-underline transition-colors">Back to Sessions</Link>}
       />
     );
   }
@@ -54,48 +59,48 @@ export default function SessionDetailPage() {
     <div>
       <Link
         to="/sessions"
-        className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 mb-4 no-underline"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 mb-5 no-underline transition-colors"
       >
         <ArrowLeft size={16} />
         Back to Sessions
       </Link>
 
-      <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+      <div className="glass-strong rounded-2xl p-6 animate-fade-in-up">
         <div className="flex items-center gap-2 mb-2">
           <Badge variant="blue">{session.module?.name}</Badge>
           {session.chapter && (
-            <span className="text-gray-600">{session.chapter}</span>
+            <span className="text-slate-500">{session.chapter}</span>
           )}
         </div>
 
-        <div className="flex items-center gap-6 text-sm text-gray-500 mt-4">
-          <span className="flex items-center gap-1">
+        <div className="flex items-center gap-6 text-sm text-slate-400 mt-4">
+          <span className="flex items-center gap-1.5">
             <Calendar size={16} />
             {session.date}
           </span>
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1.5">
             <Clock size={16} />
             {session.timeSlot}
           </span>
         </div>
 
-        <div className="text-sm text-gray-600 mt-3">
-          Created by <span className="font-medium text-gray-800">{session.creator?.name}</span>
+        <div className="text-sm text-slate-500 mt-3">
+          Created by <span className="font-medium text-slate-700">{session.creator?.name}</span>
         </div>
 
-        <div className="border-t border-secondary-200 my-6" />
+        <div className="border-t border-slate-200/50 my-6" />
 
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <h2 className="text-lg font-semibold text-slate-800 mb-4">
           Participants ({session.participantIds?.length || 0} / {session.maxParticipants})
         </h2>
 
-        <div className="space-y-2 mb-6">
+        <div className="space-y-2.5 mb-6">
           {(session.participants || []).map(p => (
             <div key={p.id} className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-medium">
+              <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-sm font-medium">
                 {p.name[0].toUpperCase()}
               </div>
-              <span className="text-sm text-gray-800">{p.name}</span>
+              <span className="text-sm text-slate-700">{p.name}</span>
               {p.id === session.creator?.id && (
                 <Badge variant="gray">Creator</Badge>
               )}

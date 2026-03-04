@@ -46,16 +46,16 @@ export default function CreateSessionPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Create Study Session</h1>
+      <h1 className="text-2xl font-bold text-slate-800 mb-6">Create Study Session</h1>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="glass-strong rounded-2xl p-7 space-y-5">
         <div>
           <ModuleSelector
             value={moduleId}
             onChange={(e) => setModuleId(e.target.value)}
           />
           {errors.moduleId && (
-            <p className="mt-1 text-sm text-red-600">{errors.moduleId}</p>
+            <p className="mt-1.5 text-sm text-rose-500">{errors.moduleId}</p>
           )}
         </div>
 
@@ -77,12 +77,12 @@ export default function CreateSessionPage() {
         />
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-slate-600 mb-2">
             Time Slot
           </label>
           <TimePicker value={timeSlot} onChange={setTimeSlot} />
           {errors.timeSlot && (
-            <p className="mt-1 text-sm text-red-600">{errors.timeSlot}</p>
+            <p className="mt-1.5 text-sm text-rose-500">{errors.timeSlot}</p>
           )}
         </div>
 

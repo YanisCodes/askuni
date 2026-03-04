@@ -51,9 +51,9 @@ export default function AskQuestionForm({ onSuccess }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-secondary-200 p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="glass-strong rounded-2xl p-7 space-y-5">
       {errors.general && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+        <div className="bg-rose-50/80 border border-rose-200/60 text-rose-600 text-sm rounded-xl px-4 py-3">
           {errors.general}
         </div>
       )}
@@ -69,13 +69,13 @@ export default function AskQuestionForm({ onSuccess }) {
       />
 
       <div>
-        <label htmlFor="question-description" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="question-description" className="block text-sm font-medium text-slate-600 mb-1.5">
           Description
         </label>
         <textarea
           id="question-description"
-          className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors resize-y min-h-[120px] ${
-            errors.description ? 'border-red-500' : 'border-secondary-300'
+          className={`input-glass resize-y min-h-[120px] ${
+            errors.description ? '!border-rose-400' : ''
           }`}
           placeholder="Provide more details about your question..."
           rows={5}
@@ -83,18 +83,18 @@ export default function AskQuestionForm({ onSuccess }) {
           onChange={(e) => setDescription(e.target.value)}
         />
         {errors.description && (
-          <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+          <p className="mt-1.5 text-sm text-rose-500">{errors.description}</p>
         )}
       </div>
 
       <div>
-        <label htmlFor="question-module" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="question-module" className="block text-sm font-medium text-slate-600 mb-1.5">
           Module
         </label>
         <select
           id="question-module"
-          className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
-            errors.moduleId ? 'border-red-500' : 'border-secondary-300'
+          className={`select-glass w-full ${
+            errors.moduleId ? '!border-rose-400' : ''
           }`}
           value={moduleId}
           onChange={(e) => setModuleId(e.target.value)}
@@ -107,7 +107,7 @@ export default function AskQuestionForm({ onSuccess }) {
           ))}
         </select>
         {errors.moduleId && (
-          <p className="mt-1 text-sm text-red-600">{errors.moduleId}</p>
+          <p className="mt-1.5 text-sm text-rose-500">{errors.moduleId}</p>
         )}
       </div>
 

@@ -11,6 +11,8 @@ import CreateSessionPage from './pages/sessions/CreateSessionPage'
 import SessionDetailPage from './pages/sessions/SessionDetailPage'
 import PlannerInputPage from './pages/planner/PlannerInputPage'
 import PlannerResultPage from './pages/planner/PlannerResultPage'
+import CameraSettings from './pages/camera/CameraSettings'
+
 
 function App() {
   return (
@@ -28,6 +30,7 @@ function App() {
           <Route path="/sessions/:id" element={<SessionDetailPage />} />
           <Route path="/planner" element={<PlannerInputPage />} />
           <Route path="/planner/results" element={<PlannerResultPage />} />
+          <Route path="/camera" element={<CameraSettings />} />
         </Route>
       </Route>
 

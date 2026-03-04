@@ -62,19 +62,19 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-secondary-50 px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-md animate-fade-in-up">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-primary-600 text-white mb-4">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-800 text-white mb-4 shadow-lg">
             <GraduationCap size={28} />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Join AskUni</h1>
-          <p className="text-gray-500 mt-1">Create your account to get started</p>
+          <h1 className="text-2xl font-bold text-slate-900">Join AskUni</h1>
+          <p className="text-slate-400 mt-1">Create your account to get started</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-secondary-200 p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="glass-strong rounded-2xl p-7 space-y-5">
           {generalError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+            <div className="bg-rose-50/80 border border-rose-200/60 text-rose-600 text-sm rounded-xl px-4 py-3">
               {generalError}
             </div>
           )}
@@ -124,9 +124,9 @@ export default function RegisterPage() {
           </Button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-slate-400 mt-6">
           Already have an account?{' '}
-          <Link to="/login" className="text-primary-600 font-medium hover:text-primary-700">
+          <Link to="/login" className="text-slate-700 font-medium hover:text-slate-900 transition-colors">
             Sign in
           </Link>
         </p>

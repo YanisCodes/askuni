@@ -28,12 +28,12 @@ export default function PlannerInputPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Smart Study Planner</h1>
-      <p className="text-gray-600 mt-1 mb-6">
+      <h1 className="text-2xl font-bold text-slate-800">Smart Study Planner</h1>
+      <p className="text-slate-400 mt-1 mb-6">
         Find the best study sessions and resources for you
       </p>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="glass-strong rounded-2xl p-7 space-y-6">
         <ModuleDropdown
           value={moduleId}
           onChange={(e) => setModuleId(e.target.value)}
@@ -41,7 +41,7 @@ export default function PlannerInputPage() {
         />
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-slate-600 mb-2">
             Select Your Available Time Slots
           </label>
           <TimeSlotSelector
@@ -51,7 +51,7 @@ export default function PlannerInputPage() {
         </div>
 
         {error && (
-          <p className="text-sm text-red-600">{error}</p>
+          <p className="text-sm text-rose-500">{error}</p>
         )}
 
         <Button

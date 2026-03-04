@@ -27,11 +27,11 @@ export default function AnswerForm({ questionId, onAnswerAdded }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-secondary-200 p-5">
-      <h3 className="text-sm font-semibold text-gray-900 mb-3">Your Answer</h3>
+    <form onSubmit={handleSubmit} className="glass rounded-2xl p-5">
+      <h3 className="text-sm font-semibold text-slate-700 mb-3">Your Answer</h3>
 
       <textarea
-        className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors resize-y min-h-[100px]"
+        className="input-glass resize-y min-h-[100px]"
         placeholder="Write your answer here..."
         rows={4}
         value={content}
@@ -39,7 +39,7 @@ export default function AnswerForm({ questionId, onAnswerAdded }) {
       />
 
       {error && (
-        <p className="mt-2 text-sm text-red-600">{error}</p>
+        <p className="mt-2 text-sm text-rose-500">{error}</p>
       )}
 
       <div className="flex justify-end mt-3">

@@ -38,7 +38,7 @@ export default function JoinButton({ session, onJoin, onLeave }) {
   return (
     <Button
       size="sm"
-      className="bg-accent-500 text-white hover:bg-accent-600"
+      className="bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm"
       onClick={(e) => handleClick(e, onJoin)}
     >
       Join

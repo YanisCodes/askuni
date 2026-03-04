@@ -3,18 +3,18 @@ import Badge from '../common/Badge';
 
 export default function RecommendationCard({ resource, moduleName }) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-4 border-l-4 border-l-accent-500">
+    <div className="glass rounded-2xl p-5 border-l-4 border-l-emerald-500">
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center text-accent-600">
+        <div className="flex-shrink-0 w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
           <BookOpen size={20} />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">{resource.title}</h3>
-          <p className="text-sm text-gray-600 mt-0.5">{resource.author}</p>
+          <h3 className="text-lg font-semibold text-slate-800">{resource.title}</h3>
+          <p className="text-sm text-slate-500 mt-0.5">{resource.author}</p>
           <div className="flex items-center gap-2 mt-2">
             <Badge variant="green">{resource.type}</Badge>
             {moduleName && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-slate-400">
                 Recommended for {moduleName}
               </span>
             )}

@@ -43,27 +43,32 @@ export default function PlannerResultPage() {
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <p className="text-sm text-gray-500">Loading recommendations...</p>
+      <div className="space-y-4">
+        <div className="h-8 w-64 rounded-lg animate-shimmer" />
+        <div className="h-4 w-48 rounded-lg animate-shimmer" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          <div className="glass rounded-2xl p-5 h-32 animate-shimmer" />
+          <div className="glass rounded-2xl p-5 h-32 animate-shimmer" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">
+    <div className="animate-fade-in-up">
+      <h1 className="text-2xl font-bold text-slate-800 mb-1">
         Recommendations for {moduleName}
       </h1>
-      <p className="text-gray-600 mb-6">
+      <p className="text-slate-400 mb-6">
         Based on your selected time slots: {timeSlots.join(', ')}
       </p>
 
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <h2 className="text-lg font-semibold text-slate-700 mb-4">
           Matching Study Sessions
         </h2>
         {suggestedSessions.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 stagger-children">
             {suggestedSessions.map(session => (
               <SessionCard key={session.id} session={session} />
             ))}
@@ -83,13 +88,13 @@ export default function PlannerResultPage() {
       </section>
 
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <h2 className="text-lg font-semibold text-slate-700 mb-4">
           Recommended Resources
         </h2>
         {resource ? (
           <RecommendationCard resource={resource} moduleName={moduleName} />
         ) : (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-slate-400">
             No resources available for this module.
           </p>
         )}

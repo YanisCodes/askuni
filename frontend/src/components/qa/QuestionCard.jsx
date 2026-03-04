@@ -7,15 +7,15 @@ export default function QuestionCard({ question, author, module, answerCount = 0
   return (
     <Link
       to={`/questions/${question.id}`}
-      className="block bg-white rounded-xl border border-secondary-200 p-5 hover:shadow-md hover:border-primary-300 transition-all"
+      className="block glass rounded-2xl p-5 card-hover no-underline"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-semibold text-gray-900 truncate">
+          <h3 className="text-base font-semibold text-slate-800 truncate">
             {question.title}
           </h3>
 
-          <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+          <p className="text-sm text-slate-400 mt-1.5 line-clamp-2">
             {question.description}
           </p>
 
@@ -24,19 +24,19 @@ export default function QuestionCard({ question, author, module, answerCount = 0
               <Badge variant="blue">{module.code}</Badge>
             )}
 
-            <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+            <span className="inline-flex items-center gap-1 text-xs text-slate-400">
               <User size={12} />
               {author ? author.name : 'Unknown'}
             </span>
 
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-slate-300">
               {formatRelativeTime(question.createdAt)}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-sm text-gray-500 shrink-0">
-          <MessageSquare size={16} />
+        <div className="flex items-center gap-1.5 text-sm text-slate-400 shrink-0 bg-slate-50 px-2.5 py-1 rounded-lg">
+          <MessageSquare size={14} />
           <span>{answerCount}</span>
         </div>
       </div>

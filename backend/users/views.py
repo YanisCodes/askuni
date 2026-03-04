@@ -28,7 +28,9 @@ def login_view(request):
     email = request.data.get('email')
     password = request.data.get('password')
     try:
-        user_obj = User.objects.get(email=email)
+        user_obj = User.objects.filter(email=email).first()
+        if not user_obj:
+            raise User.DoesNotExist
     except User.DoesNotExist:
         return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
     user = authenticate(username=user_obj.username, password=password)

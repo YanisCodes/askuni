@@ -20,7 +20,7 @@ export default function HomePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">Questions</h1>
+        <h1 className="text-xl font-bold text-slate-800">Questions</h1>
         <Link to="/ask">
           <Button size="sm">
             <Plus size={16} className="mr-1.5" />
@@ -31,7 +31,7 @@ export default function HomePage() {
 
       <div>
         <select
-          className="rounded-lg border border-secondary-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+          className="select-glass"
           value={selectedModule}
           onChange={(e) => setSelectedModule(e.target.value)}
         >
@@ -45,7 +45,7 @@ export default function HomePage() {
       </div>
 
       {filteredQuestions.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-3 stagger-children">
           {filteredQuestions.map((q) => (
             <QuestionCard
               key={q.id}

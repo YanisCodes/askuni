@@ -1,13 +1,13 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import FaceMesh from "../../components/FaceDetection";
 import HandTracking from "../../components/HandTracking";
-import CombinedTracking from "../../components/CombinedTracking";
-import { Camera, ShieldCheck, Info, Scan, Hand, Layers, Maximize2, Minimize2, Expand, Shrink } from "lucide-react";
+import PhoneTracking from "../../components/PhoneTracking";
+import { Camera, ShieldCheck, Info, Scan, Hand, Smartphone, Maximize2, Minimize2, Expand, Shrink } from "lucide-react";
 
 const MODES = [
   { id: "face", label: "Face Mesh", icon: Scan },
   { id: "hands", label: "Hand Tracking", icon: Hand },
-  { id: "combined", label: "Combined", icon: Layers },
+  { id: "phone", label: "Phone Detection", icon: Smartphone },
 ];
 
 const MODE_INFO = {
@@ -31,14 +31,14 @@ const MODE_INFO = {
       "Supports up to 2 hands simultaneously",
     ],
   },
-  combined: {
-    title: "Combined Tracking",
-    subtitle: "Face mesh + hand tracking running simultaneously",
+  phone: {
+    title: "Phone Detection",
+    subtitle: "Real-time attention monitoring (Object Detection)",
     details: [
       "Click \"Start Camera\" to activate your webcam",
-      "Both face mesh and hand tracking run on one feed",
-      "468 face landmarks + 21 hand landmarks per hand",
-      "Status overlay shows face and hand count separately",
+      "Uses MediaPipe Tasks Vision to detect cell phones",
+      "Alerts the user when a phone is held up for more than ~1.5 seconds",
+      "Runs completely independently to avoid WASM memory clashing with Face/Hand logic",
     ],
   },
 };
@@ -53,9 +53,9 @@ export default function CameraSettings() {
   const toggleFullscreen = useCallback(() => {
     if (!feedRef.current) return;
     if (!document.fullscreenElement) {
-      feedRef.current.requestFullscreen().catch(() => {});
+      feedRef.current.requestFullscreen().catch(() => { });
     } else {
-      document.exitFullscreen().catch(() => {});
+      document.exitFullscreen().catch(() => { });
     }
   }, []);
 
@@ -80,11 +80,10 @@ export default function CameraSettings() {
             <button
               key={id}
               onClick={() => setMode(id)}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
-                mode === id
-                  ? "bg-slate-800 text-white shadow-sm"
-                  : "glass text-slate-500 hover:text-slate-700"
-              }`}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${mode === id
+                ? "bg-slate-800 text-white shadow-sm"
+                : "glass text-slate-500 hover:text-slate-700"
+                }`}
             >
               <Icon size={16} />
               {label}
@@ -118,7 +117,7 @@ export default function CameraSettings() {
           <div ref={feedRef} className="glass-strong rounded-2xl p-5 bg-slate-900/5" style={isFullscreen ? { display: "flex", alignItems: "center", justifyContent: "center", background: "#0f172a", borderRadius: 0, height: "100%" } : {}}>
             {mode === "face" && <FaceMesh />}
             {mode === "hands" && <HandTracking />}
-            {mode === "combined" && <CombinedTracking />}
+            {mode === "phone" && <PhoneTracking />}
           </div>
         </div>
 

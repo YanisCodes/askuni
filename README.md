@@ -1,317 +1,104 @@
+# 🎓 AskUni
 
-# 📘 PRODUCT REQUIREMENTS DOCUMENT (PRD)
+> **A smart, collaborative study platform designed specifically for university students.**
 
-## 🟢 Product Name
-
-**AskUni**
-
----
-
-## 🎯 1. Product Overview
-
-AskUni is a smart collaborative study platform designed for university students.
-It enables students to:
-
-* Ask and answer academic questions
-* Book collaborative study sessions
-* Receive smart study suggestions
-* Follow structured IT roadmaps
-
-The platform focuses on **productivity, collaboration, and structured learning**.
+AskUni is built to solve common student challenges like disorganized study sessions, lack of structured roadmaps, and the difficulty of finding reliable academic answers. With integrated Q&A forums, collaborative session booking, and cutting-edge AI attention monitoring, AskUni provides everything a student needs to stay focused and succeed.
 
 ---
 
-## 👥 2. Target Users
+## ✨ Key Features
 
-### Primary Users
+### 💬 1. Interactive Q&A System
+* Ask module-specific academic questions.
+* Provide and receive structured answers from peers.
+* **Real-time Notifications:** Get instantly notified when someone answers your question.
 
-* University students (especially IT students)
-* Students preparing exams
-* Students needing structured study planning
+### 📅 2. Collaborative Study Sessions
+* **Create & Join:** Easily organize or join study groups based on specific modules and chapters.
+* **Time Planning:** Book structured time slots that fit your schedule.
+* **Smart Study Planner:** Input your availability, and the system recommends the best sessions and resources for you.
 
-### Secondary Users
-
-* Students seeking internship/job opportunities (future feature)
-
----
-
-## 🧠 3. Problem Statement
-
-Students face:
-
-* Disorganized study sessions
-* No structured roadmap for IT domains
-* Difficulty finding reliable answers
-* Lack of study collaboration tools
-* Poor time management
-
-AskUni solves these issues with structured tools and collaboration.
+### 🤖 3. AI-Powered Attention Monitoring (Camera feature)
+A cutting-edge focus tool built directly into the platform to help you stay on track during your study sessions.
+* **Face Mesh Tracking:** Tracks 468 facial landmarks in real-time.
+* **Hand Tracking:** Monitors hand movement to ensure engagement.
+* **Phone Detection:** Uses MediaPipe Object Detection (`tasks-vision`) to instantly detect if you pick up your smartphone, alerting you to put it away and stay focused. 
 
 ---
 
-# 🚀 4. MVP Scope (Minimum Viable Product)
+## 🛠️ Tech Stack
 
-The MVP will include **3 core features**:
+**Frontend:**
+* React.js (v19)
+* Vite
+* Tailwind CSS
+* MediaPipe (Machine Learning / Computer Vision)
 
----
-
-# 1️⃣ Q&A System with Notifications
-
-## Description
-
-Students can ask questions and answer others.
-Users receive notifications when someone replies.
-
----
-
-## User Stories
-
-* As a student, I want to post a question.
-* As a student, I want to answer a question.
-* As a student, I want to receive a notification when someone replies to my question.
-* As a student, I want to see all answers under a question.
+**Backend:**
+* Django (Python)
+* Supabase / PostgreSQL
 
 ---
 
-## Functional Requirements
+## 🚀 Getting Started
 
-### Question
+Follow these steps to set up the project locally.
 
-* Title
-* Description
-* Module tag
-* Author
-* Timestamp
+### Prerequisites
+* Node.js (v18+ recommended)
+* Python (v3.10+ recommended)
 
-### Answer
+### Frontend Setup
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the Vite development server:
+   ```bash
+   npm run dev
+   ```
+4. Open `http://localhost:5173` in your browser.
 
-* Content
-* Author
-* Timestamp
-
-### Notification
-
-* Triggered when:
-
-  * Someone answers your question
-* Notification icon in navbar
-* Mark as read
-
----
-
-## Frontend Requirements
-
-Pages:
-
-* Home (Feed of questions)
-* Question Details Page
-* Ask Question Page
-* Notifications dropdown
-
-Components:
-
-* Question Card
-* Answer Component
-* Notification Badge
-* Ask Question Form
-
----
-
-# 2️⃣ Collaborative Study Session Booking
-
-## Description
-
-Students can create or join study sessions based on module and time slot.
+### Backend Setup
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+3. Install Python dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Run migrations and start the server:
+   ```bash
+   python manage.py migrate
+   python manage.py runserver
+   ```
+5. The API will be available at `http://localhost:8000`.
 
 ---
 
-## User Stories
+## 📱 AI Tracking Modes
 
-* As a student, I want to create a study session.
-* As a student, I want to select a module.
-* As a student, I want to choose a time slot.
-* As a student, I want to join an existing session.
-
----
-
-## Functional Requirements
-
-Study Session includes:
-
-* Module
-* Chapter (optional)
-* Date
-* Time slot
-* Created by
-* Number of participants
-* Max participants (optional)
+The frontend includes a powerful `CameraSettings` page where you can test the AI integrations:
+* **Face Mesh:** Visualizes an intricate 468-point mesh over your face.
+* **Hand Tracking:** Maps 21 distinct coordinate points on your hands.
+* **Phone Detection:** Strictly isolated object detection mode that scans your webcam feed specifically for smartphones, triggering a focus alert if one is detected.
 
 ---
 
-## Frontend Pages
-
-* Create Session Page
-* Browse Sessions Page
-* Session Details Page
-
-Components:
-
-* Session Card
-* Time Picker
-* Module Selector
-* Join Button
+## 🎯 Project Goals & MVP Status
+* **Goal:** Increase student collaboration, study time efficiency, and digital focus.
+* **Status:** AskUni is currently in the MVP phase. Core Q&A, authentication, basic session planning, and the AI Camera proof-of-concept have been implemented. 
 
 ---
 
-# 3️⃣ Smart Study Planner (Basic Version)
-
-## Description
-
-User inputs:
-
-* Available time slots
-* Selected module
-
-System suggests:
-
-* Study sessions
-* Recommended resource (book)
-
----
-
-## User Stories
-
-* As a student, I want to enter my available time.
-* As a student, I want to choose a module.
-* As a student, I want to receive study suggestions.
-
----
-
-## Functional Requirements
-
-Input:
-
-* Time slots
-* Module
-
-Output:
-
-* Suggested study session
-* Recommended book/resource (static for MVP)
-
----
-
-## Frontend Pages
-
-* Planner Input Page
-* Planner Result Page
-
-Components:
-
-* Time Slot Selector
-* Module Dropdown
-* Recommendation Card
-
----
-
-# 🧭 5. Future Features (Post-MVP)
-
-* Voting System (Upvote / Downvote)
-* Guided Roadmap Questionnaire
-* Job Offer Sharing
-* Advanced Notification System
-* Real-time Study Sessions (Video)
-
----
-
-# 🖥 6. Technical Requirements
-
-### Frontend
-
-* React.js
-* HTML
-* CSS
-* JavaScript
-
-### Backend
-
-* Django
-
-### Database
-
-* SQLite
-
----
-
-# 🎨 7. UX / UI Guidelines (Frontend Focus)
-
-* Clean minimal academic design
-* Dark mode optional
-* Sidebar navigation
-* Navbar with:
-
-  * Logo
-  * Notifications
-  * Profile
-
-Color Suggestion:
-
-* Primary: Blue
-* Secondary: Light gray
-* Accent: Green (success)
-
----
-
-# 📊 8. Success Metrics (MVP)
-
-* Number of questions posted
-* Number of study sessions created
-* Number of users joining sessions
-* Daily active users
-
----
-
-# 📅 9. Timeline
-
-| Phase        | Duration       | Tasks                 |
-| ------------ | -------------- | --------------------- |
-| Planning     | Feb 15–21      | Scope definition      |
-| Development  | Feb 22 – May 1 | Frontend + Backend    |
-| MVP Delivery | End of April   | Core features working |
-
----
-
-# 📦 10. Deliverables
-
-* PRD document
-* Cahier des charges
-* Rapport de projet
-* Figma Interface File
-* Working MVP
-* Technical documentation
-
----
-
----
-
-# 🔥 Now Since You're Frontend
-
-Here’s what you should focus on:
-
-### Phase 1
-
-* Setup React structure
-* Design system (colors, layout, components)
-* Build reusable components
-
-### Phase 2
-
-* Connect to Django API
-* Handle forms & state
-* Implement notifications UI
-
-### Phase 3
-
-* Polish UI
-* Responsive design
-* Fix UX issues
+*Built with ❤️ for focused and collaborative learning.*

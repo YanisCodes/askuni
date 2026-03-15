@@ -37,6 +37,26 @@ class Answer(models.Model):
         return f"Answer to: {self.question.title}"
 
 
+class QuestionVote(models.Model):
+    VOTE_CHOICES = [(1, 'Upvote'), (-1, 'Downvote')]
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='votes')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='question_votes')
+    value = models.SmallIntegerField(choices=VOTE_CHOICES)
+
+    class Meta:
+        unique_together = ('question', 'user')
+
+
+class AnswerVote(models.Model):
+    VOTE_CHOICES = [(1, 'Upvote'), (-1, 'Downvote')]
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='votes')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='answer_votes')
+    value = models.SmallIntegerField(choices=VOTE_CHOICES)
+
+    class Meta:
+        unique_together = ('answer', 'user')
+
+
 class Resource(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='resources')
     title = models.CharField(max_length=255)

@@ -43,6 +43,17 @@ export async function createAnswer(questionId, { content }) {
   return data;
 }
 
+// ---- Votes ----
+export async function voteQuestion(questionId, value) {
+  const { data } = await apiClient.post(`/questions/${questionId}/vote/`, { value });
+  return data;
+}
+
+export async function voteAnswer(answerId, value) {
+  const { data } = await apiClient.post(`/answers/${answerId}/vote/`, { value });
+  return data;
+}
+
 // ---- Sessions ----
 export async function fetchSessions() {
   const { data } = await apiClient.get('/sessions/');

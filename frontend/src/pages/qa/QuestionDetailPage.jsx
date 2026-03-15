@@ -3,13 +3,14 @@ import { useParams, Link } from 'react-router-dom';
 import { useData } from '../../contexts/DataContext';
 import AnswerCard from '../../components/qa/AnswerCard';
 import AnswerForm from '../../components/qa/AnswerForm';
+import VoteButtons from '../../components/qa/VoteButtons';
 import Badge from '../../components/common/Badge';
 import { formatRelativeTime } from '../../utils/formatTime';
 import { ArrowLeft, User, MessageSquare } from 'lucide-react';
 
 export default function QuestionDetailPage() {
   const { id } = useParams();
-  const { getQuestionWithDetails } = useData();
+  const { getQuestionWithDetails, voteOnQuestion, voteOnAnswer } = useData();
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,6 +23,26 @@ export default function QuestionDetailPage() {
   useEffect(() => {
     loadQuestion();
   }, [loadQuestion]);
+
+  const handleQuestionVote = async (value) => {
+    const result = await voteOnQuestion(Number(id), value);
+    setQuestion(prev => prev ? { ...prev, voteCount: result.voteCount, userVote: result.userVote } : prev);
+  };
+
+  const handleAnswerVote = async (answerId, value) => {
+    const result = await voteOnAnswer(answerId, value);
+    setQuestion(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        answers: prev.answers.map(a =>
+          a.id === answerId
+            ? { ...a, voteCount: result.voteCount, userVote: result.userVote }
+            : a
+        ),
+      };
+    });
+  };
 
   if (loading) {
     return (
@@ -59,26 +80,36 @@ export default function QuestionDetailPage() {
       </Link>
 
       <div className="glass-strong rounded-2xl p-6 animate-fade-in-up">
-        <div className="flex items-center gap-3 mb-3 flex-wrap">
-          {question.module && (
-            <Badge variant="blue">{question.module.code}</Badge>
-          )}
-          <span className="inline-flex items-center gap-1 text-xs text-slate-400">
-            <User size={12} />
-            {question.author ? question.author.name : 'Unknown'}
-          </span>
-          <span className="text-xs text-slate-300">
-            {formatRelativeTime(question.createdAt)}
-          </span>
+        <div className="flex items-start gap-4">
+          <VoteButtons
+            voteCount={question.voteCount || 0}
+            userVote={question.userVote || 0}
+            onVote={handleQuestionVote}
+          />
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-3 flex-wrap">
+              {question.module && (
+                <Badge variant="blue">{question.module.code}</Badge>
+              )}
+              <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+                <User size={12} />
+                {question.author ? question.author.name : 'Unknown'}
+              </span>
+              <span className="text-xs text-slate-300">
+                {formatRelativeTime(question.createdAt)}
+              </span>
+            </div>
+
+            <h1 className="text-xl font-bold text-slate-800 mb-3">
+              {question.title}
+            </h1>
+
+            <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+              {question.description}
+            </p>
+          </div>
         </div>
-
-        <h1 className="text-xl font-bold text-slate-800 mb-3">
-          {question.title}
-        </h1>
-
-        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
-          {question.description}
-        </p>
       </div>
 
       <div className="flex items-center gap-2">
@@ -91,7 +122,7 @@ export default function QuestionDetailPage() {
       {question.answers.length > 0 ? (
         <div className="space-y-3 stagger-children">
           {question.answers.map((answer) => (
-            <AnswerCard key={answer.id} answer={answer} />
+            <AnswerCard key={answer.id} answer={answer} onVote={handleAnswerVote} />
           ))}
         </div>
       ) : (

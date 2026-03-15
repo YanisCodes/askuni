@@ -9,34 +9,40 @@ AskUni is built to solve common student challenges like disorganized study sessi
 ## ✨ Key Features
 
 ### 💬 1. Interactive Q&A System
-* Ask module-specific academic questions.
-* Provide and receive structured answers from peers.
-* **Real-time Notifications:** Get instantly notified when someone answers your question.
+
+- Ask module-specific academic questions.
+- Provide and receive structured answers from peers.
+- **Real-time Notifications:** Get instantly notified when someone answers your question.
 
 ### 📅 2. Collaborative Study Sessions
-* **Create & Join:** Easily organize or join study groups based on specific modules and chapters.
-* **Time Planning:** Book structured time slots that fit your schedule.
-* **Smart Study Planner:** Input your availability, and the system recommends the best sessions and resources for you.
+
+- **Create & Join:** Easily organize or join study groups based on specific modules and chapters.
+- **Time Planning:** Book structured time slots that fit your schedule.
+- **Smart Study Planner:** Input your availability, and the system recommends the best sessions and resources for you.
 
 ### 🤖 3. AI-Powered Attention Monitoring (Camera feature)
+
 A cutting-edge focus tool built directly into the platform to help you stay on track during your study sessions.
-* **Face Mesh Tracking:** Tracks 468 facial landmarks in real-time.
-* **Hand Tracking:** Monitors hand movement to ensure engagement.
-* **Phone Detection:** Uses MediaPipe Object Detection (`tasks-vision`) to instantly detect if you pick up your smartphone, alerting you to put it away and stay focused. 
+
+- **Face Mesh Tracking:** Tracks 468 facial landmarks in real-time.
+- **Hand Tracking:** Monitors hand movement to ensure engagement.
+- **Phone Detection:** Uses MediaPipe Object Detection (`tasks-vision`) to instantly detect if you pick up your smartphone, alerting you to put it away and stay focused.
 
 ---
 
 ## 🛠️ Tech Stack
 
 **Frontend:**
-* React.js (v19)
-* Vite
-* Tailwind CSS
-* MediaPipe (Machine Learning / Computer Vision)
+
+- React.js (v19)
+- Vite
+- Tailwind CSS
+- MediaPipe (Machine Learning / Computer Vision)
 
 **Backend:**
-* Django (Python)
-* Supabase / PostgreSQL
+
+- Django (Python)
+- Supabase / PostgreSQL
 
 ---
 
@@ -45,10 +51,12 @@ A cutting-edge focus tool built directly into the platform to help you stay on t
 Follow these steps to set up the project locally.
 
 ### Prerequisites
-* Node.js (v18+ recommended)
-* Python (v3.10+ recommended)
+
+- Node.js (v18+ recommended)
+- Python (v3.10+ recommended)
 
 ### Frontend Setup
+
 1. Navigate to the frontend directory:
    ```bash
    cd frontend
@@ -64,6 +72,7 @@ Follow these steps to set up the project locally.
 4. Open `http://localhost:5173` in your browser.
 
 ### Backend Setup
+
 1. Navigate to the backend directory:
    ```bash
    cd backend
@@ -89,16 +98,20 @@ Follow these steps to set up the project locally.
 ## 📱 AI Tracking Modes
 
 The frontend includes a powerful `CameraSettings` page where you can test the AI integrations:
-* **Face Mesh:** Visualizes an intricate 468-point mesh over your face.
-* **Hand Tracking:** Maps 21 distinct coordinate points on your hands.
-* **Phone Detection:** Strictly isolated object detection mode that scans your webcam feed specifically for smartphones, triggering a focus alert if one is detected.
+
+- **Face Mesh:** Visualizes an intricate 468-point mesh over your face.
+- **Hand Tracking:** Maps 21 distinct coordinate points on your hands.
+- **Phone Detection:** Strictly isolated object detection mode that scans your webcam feed specifically for smartphones, triggering a focus alert if one is detected.
 
 ---
 
 ## 🎯 Project Goals & MVP Status
-* **Goal:** Increase student collaboration, study time efficiency, and digital focus.
-* **Status:** AskUni is currently in the MVP phase. Core Q&A, authentication, basic session planning, and the AI Camera proof-of-concept have been implemented. 
+
+- **Goal:** Increase student collaboration, study time efficiency, and digital focus.
+- **Status:** AskUni is currently in the MVP phase. Core Q&A, authentication, basic session planning, and the AI Camera proof-of-concept have been implemented.
 
 ---
 
-*Built with ❤️ for focused and collaborative learning.*
+feel free to pull requests if u see any bugs
+
+_Built by Yanis with ❤️ for focused and collaborative learning._

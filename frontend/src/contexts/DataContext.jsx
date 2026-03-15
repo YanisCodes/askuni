@@ -12,6 +12,8 @@ import {
   createSession,
   joinSession as apiJoinSession,
   leaveSession as apiLeaveSession,
+  voteQuestion,
+  voteAnswer,
 } from '../services/api';
 import { useAuth } from './AuthContext';
 import { useNotifications } from './NotificationContext';
@@ -98,6 +100,22 @@ export function DataProvider({ children }) {
     }
   }, []);
 
+  const voteOnQuestion = useCallback(async (questionId, value) => {
+    const result = await voteQuestion(questionId, value);
+    setQuestions(prev =>
+      prev.map(q =>
+        q.id === questionId
+          ? { ...q, voteCount: result.voteCount, userVote: result.userVote }
+          : q
+      )
+    );
+    return result;
+  }, []);
+
+  const voteOnAnswer = useCallback(async (answerId, value) => {
+    return await voteAnswer(answerId, value);
+  }, []);
+
   const getSessionWithDetails = useCallback(async (sessionId) => {
     try {
       return await fetchSessionDetail(sessionId);
@@ -121,6 +139,8 @@ export function DataProvider({ children }) {
     getSessionWithDetails,
     refreshQuestions,
     refreshSessions,
+    voteOnQuestion,
+    voteOnAnswer,
   };
 
   return (

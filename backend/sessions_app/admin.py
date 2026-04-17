@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import StudySession, ChatMessage, FocusScore
 
-# Register your models here.
+admin.site.register(StudySession)
+admin.site.register(ChatMessage)
+admin.site.register(FocusScore)

@@ -1,0 +1,8 @@
+Title Sequence Diagram - Q&A Interaction and Notification Trigger
+Description
+This diagram outlines the synchronous communication and data flow when users interact within the Q&A module, specifically focusing on how actions trigger system notifications.
+
+Process Flow
+1. Content Creation User A (the Asker) submits a question via the React UI. The Django API saves this to the database, attributing the authorship to User A.
+2. Answering & Triggering When User B posts an answer to that specific question, the backend performs a dual operation it saves the Answer object and immediately creates a Notification object targeting User A.
+3. UI Update When User A reloads the application or the frontend polls the API, a GET request is sent to retrieve unread notifications (`is_read=False`). The backend fetches this from PostgreSQL, and the frontend dynamically updates the Notification Badge in the navigation bar to alert User A.

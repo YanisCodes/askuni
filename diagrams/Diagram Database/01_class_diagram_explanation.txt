@@ -1,0 +1,9 @@
+Title: Class Diagram & Database Schema Architecture
+Description:
+This diagram illustrates the relational database architecture of the AskUni platform, hosted on PostgreSQL via Supabase. It highlights the core entities required for the platform's operation and their precise attributes and data types.
+
+Key Components & Relationships:
+- User Management: The core `User` entity interacts with almost every other module. It acts as the 'author' for Questions and Answers, the 'caster' for Votes, the 'creator' (host) for Study Sessions, and the 'recipient' for Notifications.
+- Core Application (Q&A): The `Question` and `Answer` models form the foundation of the platform, both linked to a specific `Module`. A dual-voting system (`QuestionVote` and `AnswerVote`) is implemented to maintain content quality, strictly allowing one vote per user per entity (+1 or -1).
+- Study Sessions: The `StudySession` entity links a host (`creator_id`) to a specific `Module`. It utilizes a Many-to-Many (M2M) relationship to manage `participants`, allowing multiple users to join until the `max_participants` capacity is reached.
+- Notifications & Planning: The `Notification` model handles asynchronous user alerts (e.g., when an answer is posted), while the `Resource` model links static study materials directly to academic modules.

@@ -12,6 +12,13 @@ export default function SessionCard({ session }) {
       className="glass rounded-2xl p-5 card-hover block no-underline"
     >
       <div className="flex items-center gap-2 mb-2">
+        {session.status === 'live' && (
+          <Badge variant="green">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1" />
+            Live
+          </Badge>
+        )}
+        {session.status === 'ended' && <Badge variant="gray">Ended</Badge>}
         <Badge variant="blue">{session.module?.name || 'Unknown'}</Badge>
         {session.chapter && (
           <span className="text-sm text-slate-500">{session.chapter}</span>

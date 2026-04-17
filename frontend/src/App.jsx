@@ -12,6 +12,7 @@ import SessionDetailPage from './pages/sessions/SessionDetailPage'
 import PlannerInputPage from './pages/planner/PlannerInputPage'
 import PlannerResultPage from './pages/planner/PlannerResultPage'
 import CameraSettings from './pages/camera/CameraSettings'
+import LiveSessionPage from './pages/sessions/LiveSessionPage'
 
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
           <Route path="/planner/results" element={<PlannerResultPage />} />
           <Route path="/camera" element={<CameraSettings />} />
         </Route>
+        <Route path="/sessions/:id/live" element={<LiveSessionPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

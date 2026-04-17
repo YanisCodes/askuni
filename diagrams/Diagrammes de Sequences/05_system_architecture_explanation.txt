@@ -1,0 +1,10 @@
+Title: C4 Container Diagram - System Architecture
+Description:
+This diagram provides a high-level architectural view of the AskUni platform, demonstrating a modern, decoupled web stack designed for performance, scalability, and local AI processing.
+
+Key Containers:
+- Frontend (React 19 + Vite): Handles all user interface rendering, client-side routing, and state management.
+- AI Vision Engine (MediaPipe): Embedded directly within the client's browser. It processes webcam feeds locally for Face Mesh, Hand Tracking, and Object Detection (smartphones) to ensure zero video data is sent to the server, maximizing user privacy and minimizing latency.
+- Backend API (Django + DRF): Acts as the central business logic layer, handling data validation, complex queries, and authentication.
+- Database (PostgreSQL via Supabase): A robust, cloud-hosted relational database managing all persistent data.
+- Deployment (Render): Both the frontend and backend are configured for seamless cloud deployment using infrastructure-as-code scripts (`render.yaml`).

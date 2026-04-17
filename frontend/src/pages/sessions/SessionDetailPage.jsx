@@ -1,16 +1,35 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Calendar, Clock, Video, BarChart3 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { useData } from '../../contexts/DataContext';
+import { fetchFocusScores } from '../../services/api';
 import Badge from '../../components/common/Badge';
+import Button from '../../components/common/Button';
 import JoinButton from '../../components/sessions/JoinButton';
 import EmptyState from '../../components/common/EmptyState';
 
+function getSessionStartTime(dateStr, timeSlot) {
+  const startHour = parseInt(timeSlot.split(':')[0], 10)
+  const d = new Date(dateStr)
+  d.setHours(startHour, 0, 0, 0)
+  return d
+}
+
+function isWithin5Min(dateStr, timeSlot) {
+  // TODO: Remove for production - allows testing anytime
+  return true
+}
+
 export default function SessionDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { getSessionWithDetails, joinSession, leaveSession } = useData();
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [focusScores, setFocusScores] = useState([]);
+  const [showStats, setShowStats] = useState(false);
 
   const loadSession = useCallback(async () => {
     const data = await getSessionWithDetails(Number(id));
@@ -22,6 +41,12 @@ export default function SessionDetailPage() {
     loadSession();
   }, [loadSession]);
 
+  useEffect(() => {
+    if (session?.status === 'ended') {
+      fetchFocusScores(session.id).then(setFocusScores).catch(() => {});
+    }
+  }, [session?.status, session?.id]);
+
   const handleJoin = async () => {
     await joinSession(session.id);
     loadSession();
@@ -31,6 +56,12 @@ export default function SessionDetailPage() {
     await leaveSession(session.id);
     loadSession();
   };
+
+  const isCreator = user?.id === session?.creator?.id;
+  const canStartOrJoin = useMemo(() => {
+    if (!session) return false;
+    return isWithin5Min(session.date, session.timeSlot) || session.status === 'live';
+  }, [session]);
 
   if (loading) {
     return (
@@ -56,10 +87,10 @@ export default function SessionDetailPage() {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       <Link
         to="/sessions"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 mb-5 no-underline transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 no-underline transition-colors"
       >
         <ArrowLeft size={16} />
         Back to Sessions
@@ -70,6 +101,17 @@ export default function SessionDetailPage() {
           <Badge variant="blue">{session.module?.name}</Badge>
           {session.chapter && (
             <span className="text-slate-500">{session.chapter}</span>
+          )}
+          {session.status === 'live' && (
+            <Badge variant="green">
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                Live
+              </span>
+            </Badge>
+          )}
+          {session.status === 'ended' && (
+            <Badge variant="gray">Ended</Badge>
           )}
         </div>
 
@@ -108,11 +150,89 @@ export default function SessionDetailPage() {
           ))}
         </div>
 
-        <JoinButton
-          session={session}
-          onJoin={handleJoin}
-          onLeave={handleLeave}
-        />
+        <div className="space-y-3">
+          {session.status === 'upcoming' && canStartOrJoin && isCreator && (
+            <Button
+              onClick={() => navigate(`/sessions/${session.id}/live`)}
+              className="w-full bg-emerald-600 text-white hover:bg-emerald-700"
+            >
+              <Video size={16} className="mr-2" />
+              Start Session
+            </Button>
+          )}
+
+          {session.status === 'upcoming' && canStartOrJoin && !isCreator && (
+            <div className="glass rounded-xl p-4 text-center">
+              <p className="text-sm text-slate-600">Session starts soon!</p>
+              <p className="text-xs text-slate-400 mt-1">Waiting for the creator to start...</p>
+            </div>
+          )}
+
+          {session.status === 'live' && (
+            <Button
+              onClick={() => navigate(`/sessions/${session.id}/live`)}
+              className="w-full bg-emerald-600 text-white hover:bg-emerald-700"
+            >
+              <Video size={16} className="mr-2" />
+              Join Live Session
+            </Button>
+          )}
+
+          {session.status === 'ended' && focusScores.length > 0 && (
+            <Button
+              variant="secondary"
+              onClick={() => setShowStats(!showStats)}
+              className="w-full"
+            >
+              <BarChart3 size={16} className="mr-2" />
+              {showStats ? 'Hide Statistics' : 'View Focus Statistics'}
+            </Button>
+          )}
+
+          {session.status === 'ended' && showStats && (
+            <div className="space-y-3 mt-4">
+              {focusScores.map(s => {
+                const isMe = s.user?.id === user?.id
+                return (
+                  <div key={s.id} className="glass rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-slate-700">
+                        {s.user?.name || 'Unknown'}
+                        {isMe && <span className="text-slate-400 font-normal"> (you)</span>}
+                      </span>
+                      <span className={`text-lg font-bold tabular-nums ${
+                        s.score >= 70 ? 'text-emerald-600' : s.score >= 40 ? 'text-amber-600' : 'text-rose-600'
+                      }`}>
+                        {s.score}%
+                      </span>
+                    </div>
+                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className={`h-2 rounded-full ${
+                          s.score >= 70 ? 'bg-emerald-500' : s.score >= 40 ? 'bg-amber-500' : 'bg-rose-500'
+                        }`}
+                        style={{ width: `${s.score}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
+                      <span>Focused: {Math.round(s.focusedSeconds / 60)}m</span>
+                      <span>Distracted: {Math.round(s.distractedSeconds / 60)}m</span>
+                      <span>Phone alerts: {s.phoneAlertsCount}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {session.status !== 'live' && session.status !== 'ended' && (
+            <JoinButton
+              session={session}
+              onJoin={handleJoin}
+              onLeave={handleLeave}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

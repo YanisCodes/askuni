@@ -1,0 +1,8 @@
+Title: State Machine Diagram - Study Session Lifecycle
+Description:
+This diagram illustrates the lifecycle of a Study Session within the platform. Unlike traditional systems that hardcode a "status" string in the database, AskUni uses derived states calculated dynamically based on time and capacity.
+
+State Transitions:
+- Open: The default state upon creation. The session's scheduled time is in the future, and the current participant count is below the maximum capacity.
+- Full: Triggered dynamically when the participant count reaches `max_participants`. If a user leaves, the state reverts to Open.
+- Expired: A terminal state reached automatically when the system's current date and time surpass the session's scheduled date and time slot. No further users can join an expired session.

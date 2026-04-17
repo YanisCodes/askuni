@@ -1,0 +1,9 @@
+Title: Sequence Diagram - Authentication & Security Flow
+Description:
+This sequence diagram details the secure authentication lifecycle of the AskUni platform, utilizing JSON Web Tokens (JWT) to manage user sessions across a decoupled React-Django architecture.
+
+Process Flow:
+1. Registration & Login: The user submits their credentials via the React frontend. The Django backend processes this request, validating the data against the PostgreSQL database.
+2. Token Generation: Upon successful verification, the backend generates a secure Auth Token (JWT) and returns it to the frontend.
+3. Session Management: The React frontend securely stores this token (e.g., in localStorage) and updates the application's AuthContext, redirecting the user to protected routes (like the Dashboard or Planner).
+4. Protected Requests: For all subsequent actions (e.g., posting a question), the frontend attaches this stored token to the HTTP headers. The backend validates the token before executing the database query and returning the requested data.

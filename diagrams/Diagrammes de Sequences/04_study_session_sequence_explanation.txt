@@ -1,0 +1,11 @@
+Title: Sequence Diagram - Study Session Booking and Capacity Management
+Description:
+This diagram maps the logic behind the peer-to-peer study session feature, emphasizing the backend capacity validation required before a user can join a session.
+
+Process Flow:
+1. Session Creation: A Host defines the parameters (Date, Time, Module, Max Capacity) and creates the session. The database records this with the Host set as the `creator`.
+2. Join Request: A Student attempts to join the session via the frontend interface.
+3. Capacity Validation: The Django API intercepts the request and calculates the current number of participants (via the Many-to-Many relationship). 
+4. Conditional Logic: 
+   - If the current participant count equals `max_participants`, the backend rejects the request (400 Bad Request) and the UI displays an error.
+   - If there is available capacity, the backend adds the user to the participant list and confirms the successful enrollment (200 OK) to the frontend.

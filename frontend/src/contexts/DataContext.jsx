@@ -14,6 +14,8 @@ import {
   leaveSession as apiLeaveSession,
   voteQuestion,
   voteAnswer,
+  startSession as apiStartSession,
+  endSession as apiEndSession,
 } from '../services/api';
 import { useAuth } from './AuthContext';
 import { useNotifications } from './NotificationContext';
@@ -124,6 +126,19 @@ export function DataProvider({ children }) {
     }
   }, []);
 
+  const startSessionAction = useCallback(async (sessionId, hostPeerId) => {
+    const updated = await apiStartSession(sessionId, { hostPeerId });
+    setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: 'live', hostPeerId: updated.hostPeerId, startedAt: updated.startedAt } : s));
+    refreshNotifications();
+    return updated;
+  }, [refreshNotifications]);
+
+  const endSessionAction = useCallback(async (sessionId) => {
+    const updated = await apiEndSession(sessionId);
+    setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: 'ended', endedAt: updated.endedAt } : s));
+    return updated;
+  }, []);
+
   const value = {
     questions,
     sessions,
@@ -137,6 +152,8 @@ export function DataProvider({ children }) {
     leaveSession: leaveSessionAction,
     getQuestionWithDetails,
     getSessionWithDetails,
+    startSession: startSessionAction,
+    endSession: endSessionAction,
     refreshQuestions,
     refreshSessions,
     voteOnQuestion,

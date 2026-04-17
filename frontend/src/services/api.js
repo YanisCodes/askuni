@@ -80,6 +80,43 @@ export async function leaveSession(id) {
   return data;
 }
 
+// ---- Live Session ----
+export async function startSession(id, { hostPeerId }) {
+  const { data } = await apiClient.post(`/sessions/${id}/start/`, { hostPeerId });
+  return data;
+}
+
+export async function endSession(id) {
+  const { data } = await apiClient.post(`/sessions/${id}/end/`);
+  return data;
+}
+
+// ---- Chat Messages ----
+export async function fetchSessionMessages(sessionId) {
+  const { data } = await apiClient.get(`/sessions/${sessionId}/messages/`);
+  return data;
+}
+
+export async function sendChatMessage(sessionId, { content, messageType, fileUrl, fileName }) {
+  const { data } = await apiClient.post(`/sessions/${sessionId}/messages/`, {
+    content, messageType, fileUrl, fileName,
+  });
+  return data;
+}
+
+// ---- Focus Scores ----
+export async function submitFocusScore(sessionId, { score, focusedSeconds, distractedSeconds, phoneAlertsCount, durationSeconds }) {
+  const { data } = await apiClient.post(`/sessions/${sessionId}/focus-score/`, {
+    score, focusedSeconds, distractedSeconds, phoneAlertsCount, durationSeconds,
+  });
+  return data;
+}
+
+export async function fetchFocusScores(sessionId) {
+  const { data } = await apiClient.get(`/sessions/${sessionId}/focus-scores/`);
+  return data;
+}
+
 // ---- Notifications ----
 export async function fetchNotifications() {
   const { data } = await apiClient.get('/notifications/');

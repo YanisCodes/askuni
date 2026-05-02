@@ -25,6 +25,7 @@ export default function ChatPanel({ sessionId, isOpen, onClose }) {
         return [...prev, msg]
       })
     })
+
     return () => {
       ignore = true
       unsubscribe()

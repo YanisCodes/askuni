@@ -11,7 +11,7 @@ export default function AppLayout() {
       <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main className="pt-16 lg:ml-64">
-        <div className="p-6 max-w-5xl mx-auto animate-fade-in-up">
+        <div className="px-6 py-8 max-w-5xl mx-auto">
           <Outlet />
         </div>
       </main>

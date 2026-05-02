@@ -18,38 +18,41 @@ export default function VoteButtons({ voteCount = 0, userVote = 0, onVote }) {
     }
   };
 
+  const countTone =
+    voteCount > 0 ? 'text-accent-600' :
+    voteCount < 0 ? 'text-primary-400' :
+    'text-primary-400';
+
   return (
-    <div className="flex flex-col items-center gap-0.5 shrink-0">
+    <div className="flex flex-col items-center shrink-0 select-none">
       <button
         onClick={(e) => handleVote(e, 1)}
         disabled={loading}
-        className={`p-1 rounded-lg transition-colors ${
+        aria-label="Upvote"
+        className={`p-1 rounded-md transition-colors cursor-pointer ${
           userVote === 1
-            ? 'text-emerald-500 bg-emerald-500/10'
-            : 'text-slate-400 hover:text-emerald-500 hover:bg-emerald-500/10'
+            ? 'text-accent-600 bg-accent-500/10'
+            : 'text-primary-300 hover:text-accent-600 hover:bg-accent-500/10'
         }`}
       >
-        <ChevronUp size={18} />
+        <ChevronUp size={17} strokeWidth={2.2} />
       </button>
 
-      <span className={`text-sm font-semibold tabular-nums ${
-        voteCount > 0 ? 'text-emerald-500' :
-        voteCount < 0 ? 'text-rose-500' :
-        'text-slate-400'
-      }`}>
+      <span className={`text-[13px] font-semibold tabular-nums leading-tight my-0.5 ${countTone}`}>
         {voteCount}
       </span>
 
       <button
         onClick={(e) => handleVote(e, -1)}
         disabled={loading}
-        className={`p-1 rounded-lg transition-colors ${
+        aria-label="Downvote"
+        className={`p-1 rounded-md transition-colors cursor-pointer ${
           userVote === -1
-            ? 'text-rose-500 bg-rose-500/10'
-            : 'text-slate-400 hover:text-rose-500 hover:bg-rose-500/10'
+            ? 'text-primary-700 bg-primary-200/60'
+            : 'text-primary-300 hover:text-primary-700 hover:bg-primary-200/50'
         }`}
       >
-        <ChevronDown size={18} />
+        <ChevronDown size={17} strokeWidth={2.2} />
       </button>
     </div>
   );

@@ -8,7 +8,7 @@ export function subscribeToChat(sessionId, onMessage) {
       {
         event: 'INSERT',
         schema: 'public',
-        table: 'chat_messages',
+        table: 'sessions_app_chatmessage',
         filter: `session_id=eq.${sessionId}`,
       },
       (payload) => {

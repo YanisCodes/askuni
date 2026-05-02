@@ -10,6 +10,7 @@ export default function useVideoCall(userId, hostPeerId) {
   const [isCameraOff, setIsCameraOff] = useState(false)
   const callsRef = useRef({})
   const remoteStreamsRef = useRef({})
+  const localStreamRef = useRef(null)
 
   const initPeer = useCallback(async () => {
     try {
@@ -18,22 +19,44 @@ export default function useVideoCall(userId, hostPeerId) {
       setMyPeerId(p.id)
 
       listenForIncomingCalls(p, (call) => {
-        if (!localStream) return
+        const activeLocalStream = localStreamRef.current
 
-        call.answer(localStream)
+        console.log('[Mesh] Answering incoming call from:', call.peer, 'with stream:', !!activeLocalStream)
+        // PeerJS requires undefined/null if no stream
+        if (activeLocalStream) {
+          call.answer(activeLocalStream)
+        } else {
+          // Pass MediaStream constraints or empty to satisfy PeerJS answering logic 
+          // without sending actual media. Creating a blank audio track prevents crashes
+          // on strictly enforced browsers while providing no real mic data.
+          try {
+            call.answer()
+          } catch(e) {
+            console.error('[Mesh] Answer failed:', e)
+          }
+        }
+        
         answerCall(call, (stream, peerId) => {
+          console.log('[Mesh] Received stream from caller:', peerId)
           remoteStreamsRef.current[peerId] = stream
           setRemoteStreams({ ...remoteStreamsRef.current })
         })
         callsRef.current[call.peer] = call
+
+        call.on('close', () => {
+          console.log('[Mesh] Incoming call closed by remote:', call.peer)
+          delete callsRef.current[call.peer]
+          delete remoteStreamsRef.current[call.peer]
+          setRemoteStreams({ ...remoteStreamsRef.current })
+        })
       })
 
-      return p.id
+      return p
     } catch (err) {
       console.error('Failed to init peer:', err)
       return null
     }
-  }, [userId, localStream])
+  }, [userId])
 
   const startLocalStream = useCallback(async () => {
     try {
@@ -41,7 +64,17 @@ export default function useVideoCall(userId, hostPeerId) {
         video: true,
         audio: true,
       })
+      localStreamRef.current = stream
       setLocalStream(stream)
+
+      // Restart all calls so they get our new stream
+      Object.values(callsRef.current).forEach(call => {
+        try { call.close() } catch (e) { /* ignored */ }
+      })
+      callsRef.current = {}
+      setRemoteStreams({})
+      remoteStreamsRef.current = {}
+
       return stream
     } catch (err) {
       console.error('Failed to get local stream:', err)
@@ -49,9 +82,10 @@ export default function useVideoCall(userId, hostPeerId) {
     }
   }, [])
 
-  const connectToHost = useCallback((p, stream) => {
-    if (!hostPeerId || !p || !stream) return
-    const call = callPeer(p, hostPeerId, stream)
+  const connectToHost = useCallback((stream) => {
+    const activeLocalStream = stream || localStreamRef.current
+    if (!hostPeerId || !peer || !activeLocalStream) return
+    const call = callPeer(peer, hostPeerId, activeLocalStream)
     if (call) {
       answerCall(call, (remoteStream, peerId) => {
         remoteStreamsRef.current[peerId] = remoteStream
@@ -59,19 +93,42 @@ export default function useVideoCall(userId, hostPeerId) {
       })
       callsRef.current[call.peer] = call
     }
-  }, [hostPeerId])
+  }, [hostPeerId, peer])
 
   const connectToPeer = useCallback((remotePeerId) => {
-    if (!peer || !localStream || callsRef.current[remotePeerId]) return
-    const call = callPeer(peer, remotePeerId, localStream)
+    const activeLocalStream = localStreamRef.current
+    if (!peer || callsRef.current[remotePeerId]) return
+    if (remotePeerId === myPeerId) return // Prevent self-call
+    
+    console.log('[Mesh] Calling peer:', remotePeerId)
+    // PeerJS requires a stream or empty audio track, but we must pass something valid
+    const call = activeLocalStream 
+      ? callPeer(peer, remotePeerId, activeLocalStream)
+      : callPeer(peer, remotePeerId) // Note: Peer 1.5.5 expects undefined if no stream
+      
     if (call) {
+      callsRef.current[remotePeerId] = call
       answerCall(call, (stream, peerId) => {
+        console.log('[Mesh] Received stream from called peer:', peerId)
         remoteStreamsRef.current[peerId] = stream
         setRemoteStreams({ ...remoteStreamsRef.current })
       })
-      callsRef.current[remotePeerId] = call
+
+      call.on('stream', (stream) => {
+        console.log('[Mesh] Received stream via stream event from:', remotePeerId)
+        remoteStreamsRef.current[remotePeerId] = stream
+        setRemoteStreams({ ...remoteStreamsRef.current })
+      })
+
+      // When they close their camera, remove their stream
+      call.on('close', () => {
+        console.log('[Mesh] Call closed with:', remotePeerId)
+        delete callsRef.current[remotePeerId]
+        delete remoteStreamsRef.current[remotePeerId]
+        setRemoteStreams({ ...remoteStreamsRef.current })
+      })
     }
-  }, [peer, localStream])
+  }, [peer, myPeerId])
 
   const toggleMute = useCallback(() => {
     if (localStream) {
@@ -102,6 +159,7 @@ export default function useVideoCall(userId, hostPeerId) {
       localStream.getTracks().forEach(t => t.stop())
       setLocalStream(null)
     }
+    localStreamRef.current = null
     setRemoteStreams({})
     destroyPeer()
     setPeer(null)

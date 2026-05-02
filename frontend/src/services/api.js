@@ -117,6 +117,17 @@ export async function fetchFocusScores(sessionId) {
   return data;
 }
 
+// ---- Peer Registry (Mesh Networking) ----
+export async function registerPeer(sessionId, peerId) {
+  const { data } = await apiClient.post(`/sessions/${sessionId}/peer-registry/`, { peerId });
+  return data;
+}
+
+export async function fetchPeerRegistry(sessionId) {
+  const { data } = await apiClient.get(`/sessions/${sessionId}/peer-registry/`);
+  return data;
+}
+
 // ---- Notifications ----
 export async function fetchNotifications() {
   const { data } = await apiClient.get('/notifications/');

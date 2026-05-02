@@ -7,8 +7,11 @@ import useFocusTracker from '../../hooks/useFocusTracker'
 import {
   startSession as apiStartSession,
   endSession as apiEndSession,
+  joinSession as apiJoinSession,
   submitFocusScore,
   fetchFocusScores,
+  registerPeer,
+  fetchPeerRegistry,
 } from '../../services/api'
 import VideoGrid from '../../components/live/VideoGrid'
 import ControlBar from '../../components/live/ControlBar'
@@ -38,6 +41,8 @@ export default function LiveSessionPage() {
     initPeer,
     startLocalStream,
     connectToHost,
+    connectToPeer,
+    myPeerId,
     toggleMute,
     toggleCamera,
     cleanup: cleanupCall,
@@ -69,37 +74,114 @@ export default function LiveSessionPage() {
     }
   }, [session?.status, id, navigate])
 
+  // Initialize peer automatically when entering live session
+  useEffect(() => {
+    if (!session || session.status !== 'live' || myPeerId) return
+    
+    initPeer().catch(e => {
+      console.error('Failed to init peer on live session join:', e)
+    })
+  }, [session?.status, myPeerId, initPeer])
+
   const isCreator = user?.id === session?.creator?.id
   const isParticipant = session?.participantIds?.includes(user?.id)
+
+  // Register in peer registry immediately when peer ID is ready
+  // BUT only after we are officially part of the session
+  useEffect(() => {
+    if (!session || session.status !== 'live' || !myPeerId) return
+    if (!isParticipant && !isCreator) return
+    
+    registerPeer(Number(id), myPeerId).catch(e => {
+      console.error('Failed to register peer:', e)
+    })
+  }, [session?.status, myPeerId, id, isParticipant, isCreator])
+
+  // Mesh networking: discover and connect to other participants
+  useEffect(() => {
+    if (!session || session.status !== 'live' || !myPeerId) return
+    
+    const discoveryInterval = setInterval(async () => {
+      try {
+        const registry = await fetchPeerRegistry(Number(id))
+        const activePeerIds = registry.activePeerIds || {}
+        
+        // Try to connect to each participant (except self and those already connected)
+        Object.entries(activePeerIds).forEach(([userId, peerId]) => {
+          if (peerId !== myPeerId) {
+            connectToPeer(peerId)
+          }
+        })
+      } catch (e) {
+        // Suppress network logs if polling fails gracefully
+      }
+    }, 2000) // Poll every 2 seconds
+    
+    return () => clearInterval(discoveryInterval)
+  }, [session, myPeerId, id, connectToPeer])
+
+  // Auto-join if user navigates to a live session they aren't part of
+  useEffect(() => {
+    if (session?.status === 'live' && !isParticipant && !isCreator && user) {
+      console.log('User is entering live session, auto-joining...')
+      apiJoinSession(id).then(() => loadSession()).catch(e => console.error('Auto-join failed:', e))
+    }
+  }, [session?.status, isParticipant, isCreator, user, id, loadSession])
 
   const handleStartSession = useCallback(async () => {
     setStarting(true)
     try {
-      const stream = await startLocalStream()
-      if (!stream) { setStarting(false); return }
-      const peerId = await initPeer()
-      if (!peerId) { setStarting(false); return }
+      const peer = await initPeer()
+      if (!peer) { 
+        setStarting(false)
+        alert('Failed to initialize network connection')
+        return 
+      }
 
-      const updated = await apiStartSession(id, { hostPeerId: peerId })
+      console.log('Starting session with peer:', peer.id)
+      const updated = await apiStartSession(id, { hostPeerId: peer.id })
+      console.log('Session started, updated:', updated)
       setSession(updated)
     } catch (err) {
       console.error('Failed to start session:', err)
+      alert('Failed to start session: ' + (err.response?.data?.detail || err.message))
     } finally {
       setStarting(false)
     }
-  }, [id, startLocalStream, initPeer])
+  }, [id, initPeer])
 
-  const handleJoinLive = useCallback(async () => {
-    const stream = await startLocalStream()
-    if (!stream) return
-    const peerId = await initPeer()
-    if (!peerId) return
-
-    const freshSession = await loadSession()
-    if (freshSession?.hostPeerId) {
-      connectToHost(undefined, stream)
+  const handleToggleCamera = useCallback(async () => {
+    if (!localStream) {
+      // First time turning on: get media and let the Mesh network re-connect!
+      const stream = await startLocalStream()
+      if (!stream) {
+        alert('Failed to access camera/microphone')
+        return
+      }
+      
+      // Ensure peer is fully initialized
+      let currentPeerId = myPeerId
+      if (!currentPeerId) {
+        const peer = await initPeer()
+        if (peer) currentPeerId = peer.id
+      }
+      if (currentPeerId) {
+        registerPeer(Number(id), currentPeerId).catch(console.error)
+      }
+    } else {
+      // Hardware exists, just toggle track
+      toggleCamera()
     }
-  }, [startLocalStream, initPeer, loadSession, connectToHost])
+  }, [localStream, startLocalStream, myPeerId, initPeer, id, toggleCamera])
+
+  const handleToggleMute = useCallback(async () => {
+    if (!localStream) {
+      // Turning on for first time means getting full media stream
+      await handleToggleCamera()
+    } else {
+      toggleMute()
+    }
+  }, [localStream, handleToggleCamera, toggleMute])
 
   const handleEndSession = useCallback(async () => {
     let finalStats = null
@@ -236,35 +318,23 @@ export default function LiveSessionPage() {
 
       <div className="flex-1 flex overflow-hidden">
         <div className="flex-1 flex flex-col p-3 gap-3 min-w-0">
-          {!localStream ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-4">
-              <div className="w-16 h-16 bg-slate-700 rounded-2xl flex items-center justify-center text-slate-400">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                  <circle cx="12" cy="13" r="3" />
-                </svg>
-              </div>
-              <p className="text-slate-400 text-sm">Join the video call to participate</p>
-              <Button onClick={handleJoinLive}>Join Video Call</Button>
-            </div>
-          ) : (
-            <div className="flex-1 min-h-0">
-              <VideoGrid
-                localStream={localStream}
-                remoteStreams={remoteStreams}
-                participants={session.participants}
-              />
-            </div>
-          )}
+          <div className="flex-1 min-h-0">
+            <VideoGrid
+              currentUser={user}
+              localStream={localStream}
+              remoteStreams={remoteStreams}
+              participants={session.participants || []}
+            />
+          </div>
 
           <ControlBar
-            isMuted={isMuted}
-            isCameraOff={isCameraOff}
+            isMuted={!localStream || isMuted} // Show as muted if stream not started
+            isCameraOff={!localStream || isCameraOff} // Show as camera off if stream not started
             isTracking={isTracking}
             phoneAlert={phoneAlert}
             currentScore={currentScore}
-            onToggleMute={toggleMute}
-            onToggleCamera={toggleCamera}
+            onToggleMute={handleToggleMute}
+            onToggleCamera={handleToggleCamera}
             onToggleFocus={handleToggleFocus}
             onLeave={handleLeave}
           />

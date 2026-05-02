@@ -13,11 +13,13 @@ import PlannerInputPage from './pages/planner/PlannerInputPage'
 import PlannerResultPage from './pages/planner/PlannerResultPage'
 import CameraSettings from './pages/camera/CameraSettings'
 import LiveSessionPage from './pages/sessions/LiveSessionPage'
+import LandingPage from './pages/LandingPage'
 
 
 function App() {
   return (
     <Routes>
+      <Route path="/landing" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 

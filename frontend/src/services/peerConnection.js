@@ -47,8 +47,11 @@ export function destroyPeer() {
 }
 
 export function callPeer(peer, remotePeerId, localStream) {
-  const call = peer.call(remotePeerId, localStream)
-  return call
+  if (localStream) {
+    return peer.call(remotePeerId, localStream)
+  } else {
+    return peer.call(remotePeerId, undefined)
+  }
 }
 
 export function answerCall(call, onStream) {

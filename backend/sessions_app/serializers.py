@@ -47,7 +47,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage
         fields = ['id', 'session', 'user', 'content', 'message_type', 'file_url', 'file_name', 'created_at']
-        read_only_fields = ['id', 'user', 'created_at']
+        read_only_fields = ['id', 'session', 'user', 'created_at']
 
 
 class FocusScoreSerializer(serializers.ModelSerializer):

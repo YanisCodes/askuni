@@ -11,4 +11,5 @@ urlpatterns = [
     path('sessions/<int:pk>/messages/', views.chat_messages),
     path('sessions/<int:pk>/focus-score/', views.submit_focus_score),
     path('sessions/<int:pk>/focus-scores/', views.session_focus_scores),
+    path('sessions/<int:pk>/peer-registry/', views.register_peer),
 ]

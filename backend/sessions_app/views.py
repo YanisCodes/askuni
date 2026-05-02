@@ -181,3 +181,31 @@ def session_focus_scores(request, pk):
     scores = FocusScore.objects.filter(session=session).select_related('user')
     serializer = FocusScoreSerializer(scores, many=True)
     return Response(serializer.data)
+
+
+@api_view(['POST', 'GET'])
+def register_peer(request, pk):
+    """Register or retrieve peer IDs for mesh networking in live sessions."""
+    try:
+        session = StudySession.objects.get(pk=pk)
+    except StudySession.DoesNotExist:
+        return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.user not in session.participants.all() and request.user != session.creator:
+        return Response({'detail': 'Not a participant'}, status=status.HTTP_403_FORBIDDEN)
+
+    if request.method == 'POST':
+        peer_id = request.data.get('peer_id', '')
+        if not peer_id:
+            return Response({'detail': 'peer_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Register or update peer ID for this user
+        if not session.active_peer_ids:
+            session.active_peer_ids = {}
+        session.active_peer_ids[str(request.user.id)] = peer_id
+        session.save()
+        
+        return Response({'active_peer_ids': session.active_peer_ids})
+    
+    # GET: return all active peer IDs
+    return Response({'active_peer_ids': session.active_peer_ids or {}})

@@ -20,6 +20,7 @@ class StudySession(models.Model):
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     host_peer_id = models.CharField(max_length=100, blank=True, default='')
+    active_peer_ids = models.JSONField(default=dict, blank=True)  # {user_id: peer_id} for mesh networking
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

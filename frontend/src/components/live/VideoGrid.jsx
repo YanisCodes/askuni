@@ -50,7 +50,10 @@ export default function VideoGrid({ currentUser, localStream, remoteStreams, par
         if (isMe) {
           stream = localStream
         } else {
-          const streamEntry = remoteEntries.find(([peerId]) => peerId.includes(`-${p.id}-`))
+          const streamEntry = remoteEntries.find(([peerId]) => {
+            const match = peerId.match(/^askuni-(\d+)-/)
+            return match && parseInt(match[1], 10) === p.id
+          })
           if (streamEntry) stream = streamEntry[1]
         }
 
@@ -62,7 +65,10 @@ export default function VideoGrid({ currentUser, localStream, remoteStreams, par
                 playsInline
                 muted={isMe} // always mute our own playback
                 ref={(el) => {
-                  if (el) el.srcObject = stream
+                  // Only swap srcObject when the stream actually changes —
+                  // re-assigning the same stream on every render reinitializes
+                  // the element and causes the camera feed to flicker.
+                  if (el && el.srcObject !== stream) el.srcObject = stream
                 }}
                 className={`w-full h-full object-cover ${isMe ? 'mirror' : ''}`}
               />

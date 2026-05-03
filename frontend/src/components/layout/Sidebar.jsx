@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Users, Calendar, PlusCircle, Camera, X } from 'lucide-react';
+import { Home, Users, Calendar, PlusCircle, Camera, BarChart3, X } from 'lucide-react';
 
 const navItems = [
   { path: '/', label: 'Home', icon: Home },
   { path: '/sessions', label: 'Sessions', icon: Users },
   { path: '/planner', label: 'Planner', icon: Calendar },
   { path: '/camera', label: 'Camera', icon: Camera },
+  { path: '/focus-history', label: 'Focus History', icon: BarChart3 },
   { path: '/ask', label: 'Ask Question', icon: PlusCircle },
 ];
 

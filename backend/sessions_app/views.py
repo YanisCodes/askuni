@@ -5,7 +5,7 @@ from django.utils import timezone
 from .models import StudySession, ChatMessage, FocusScore
 from .serializers import (
     SessionListSerializer, SessionDetailSerializer,
-    ChatMessageSerializer, FocusScoreSerializer
+    ChatMessageSerializer, FocusScoreSerializer, FocusScoreHistorySerializer,
 )
 from notifications_app.models import Notification
 
@@ -68,6 +68,9 @@ def leave_session(request, pk):
         return Response({'detail': 'Not a participant'}, status=status.HTTP_400_BAD_REQUEST)
 
     session.participants.remove(request.user)
+    if session.active_peer_ids and str(request.user.id) in session.active_peer_ids:
+        del session.active_peer_ids[str(request.user.id)]
+        session.save(update_fields=['active_peer_ids'])
     return Response(SessionDetailSerializer(session).data)
 
 
@@ -120,6 +123,7 @@ def end_session(request, pk):
     session.status = 'ended'
     session.ended_at = timezone.now()
     session.host_peer_id = ''
+    session.active_peer_ids = {}
     session.save()
 
     return Response(SessionDetailSerializer(session).data)
@@ -180,6 +184,19 @@ def session_focus_scores(request, pk):
 
     scores = FocusScore.objects.filter(session=session).select_related('user')
     serializer = FocusScoreSerializer(scores, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+def my_focus_history(request):
+    """All focus scores submitted by the current user, newest first, with session context."""
+    scores = (
+        FocusScore.objects
+        .filter(user=request.user)
+        .select_related('session', 'session__module')
+        .order_by('-created_at')
+    )
+    serializer = FocusScoreHistorySerializer(scores, many=True)
     return Response(serializer.data)
 
 

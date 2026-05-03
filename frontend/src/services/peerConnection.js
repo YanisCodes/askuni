@@ -47,10 +47,14 @@ export function destroyPeer() {
 }
 
 export function callPeer(peer, remotePeerId, localStream) {
-  if (localStream) {
+  // PeerJS requires a MediaStream; without one we can't initiate a media call.
+  // Callers re-issue the call once their local stream is available.
+  if (!localStream) return null
+  try {
     return peer.call(remotePeerId, localStream)
-  } else {
-    return peer.call(remotePeerId, undefined)
+  } catch (err) {
+    console.error('peer.call failed:', err)
+    return null
   }
 }
 

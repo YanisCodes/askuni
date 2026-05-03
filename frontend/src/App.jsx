@@ -13,6 +13,7 @@ import PlannerInputPage from './pages/planner/PlannerInputPage'
 import PlannerResultPage from './pages/planner/PlannerResultPage'
 import CameraSettings from './pages/camera/CameraSettings'
 import LiveSessionPage from './pages/sessions/LiveSessionPage'
+import FocusHistoryPage from './pages/focus/FocusHistoryPage'
 import LandingPage from './pages/LandingPage'
 
 
@@ -34,6 +35,7 @@ function App() {
           <Route path="/planner" element={<PlannerInputPage />} />
           <Route path="/planner/results" element={<PlannerResultPage />} />
           <Route path="/camera" element={<CameraSettings />} />
+          <Route path="/focus-history" element={<FocusHistoryPage />} />
         </Route>
         <Route path="/sessions/:id/live" element={<LiveSessionPage />} />
       </Route>

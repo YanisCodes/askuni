@@ -32,6 +32,8 @@ export default function LiveSessionPage() {
   const [showSummary, setShowSummary] = useState(false)
   const [focusScores, setFocusScores] = useState([])
   const [starting, setStarting] = useState(false)
+  const [endingByCreator, setEndingByCreator] = useState(false)
+  const [exiting, setExiting] = useState(false)
 
   const {
     localStream,
@@ -67,21 +69,62 @@ export default function LiveSessionPage() {
     loadSession()
   }, [loadSession])
 
+  // When the creator ends the session, participants poll and detect the change.
+  // Show them their summary instead of silently redirecting.
+  const showSummaryRef = useRef(false)
   useEffect(() => {
     if (!session) return
-    if (session.status === 'ended') {
-      navigate(`/sessions/${id}`)
-    }
-  }, [session?.status, id, navigate])
+    if (session.status !== 'ended') return
+    if (endingByCreator || showSummaryRef.current) return
+    showSummaryRef.current = true
+
+    let finalStats = null
+    if (isTracking) finalStats = stopTracking()
+    cleanupCall()
+
+    ;(async () => {
+      try {
+        if (finalStats && finalStats.durationSeconds > 0) {
+          await submitFocusScore(id, finalStats)
+        }
+      } catch (e) { /* non-critical */ }
+      try {
+        const scores = await fetchFocusScores(id)
+        setFocusScores(scores || [])
+      } catch (e) { /* non-critical */ }
+      setShowSummary(true)
+    })()
+  }, [session?.status, id, endingByCreator, isTracking, stopTracking, cleanupCall])
+
+  // Poll session status so participants notice when creator ends the session
+  useEffect(() => {
+    if (!session || session.status !== 'live') return
+    const interval = setInterval(() => {
+      loadSession().catch(() => {})
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [session?.status, loadSession])
 
   // Initialize peer automatically when entering live session
   useEffect(() => {
     if (!session || session.status !== 'live' || myPeerId) return
-    
+
     initPeer().catch(e => {
       console.error('Failed to init peer on live session join:', e)
     })
   }, [session?.status, myPeerId, initPeer])
+
+  // Auto-start local camera/mic once we're in a live session and have a peer
+  const mediaRequestedRef = useRef(false)
+  useEffect(() => {
+    if (!session || session.status !== 'live' || !myPeerId) return
+    if (localStream || mediaRequestedRef.current) return
+    mediaRequestedRef.current = true
+    startLocalStream().catch(e => {
+      console.error('Failed to start local stream:', e)
+      mediaRequestedRef.current = false
+    })
+  }, [session?.status, myPeerId, localStream, startLocalStream])
 
   const isCreator = user?.id === session?.creator?.id
   const isParticipant = session?.participantIds?.includes(user?.id)
@@ -118,14 +161,20 @@ export default function LiveSessionPage() {
     }, 2000) // Poll every 2 seconds
     
     return () => clearInterval(discoveryInterval)
-  }, [session, myPeerId, id, connectToPeer])
+  }, [session?.status, myPeerId, id, connectToPeer])
 
   // Auto-join if user navigates to a live session they aren't part of
+  const autoJoinedRef = useRef(false)
   useEffect(() => {
-    if (session?.status === 'live' && !isParticipant && !isCreator && user) {
-      console.log('User is entering live session, auto-joining...')
-      apiJoinSession(id).then(() => loadSession()).catch(e => console.error('Auto-join failed:', e))
-    }
+    if (session?.status !== 'live' || isParticipant || isCreator || !user) return
+    if (autoJoinedRef.current) return
+    autoJoinedRef.current = true
+    apiJoinSession(id)
+      .then(() => loadSession())
+      .catch(e => {
+        console.error('Auto-join failed:', e)
+        autoJoinedRef.current = false
+      })
   }, [session?.status, isParticipant, isCreator, user, id, loadSession])
 
   const handleStartSession = useCallback(async () => {
@@ -184,6 +233,8 @@ export default function LiveSessionPage() {
   }, [localStream, handleToggleCamera, toggleMute])
 
   const handleEndSession = useCallback(async () => {
+    setEndingByCreator(true)
+    showSummaryRef.current = true
     let finalStats = null
     if (isTracking) {
       finalStats = stopTracking()
@@ -191,40 +242,74 @@ export default function LiveSessionPage() {
     cleanupCall()
 
     try {
-      if (finalStats) {
+      if (finalStats && finalStats.durationSeconds > 0) {
         await submitFocusScore(id, finalStats)
       }
       const ended = await apiEndSession(id)
-      setSession(ended)
-
       const scores = await fetchFocusScores(id)
       setFocusScores(scores || [])
       setShowSummary(true)
+      setSession(ended)
     } catch (err) {
       console.error('Failed to end session:', err)
+      setEndingByCreator(false)
       navigate(`/sessions/${id}`)
     }
   }, [id, isTracking, stopTracking, cleanupCall, navigate])
 
   const handleLeave = useCallback(async () => {
-    if (isTracking) {
-      const finalStats = stopTracking()
-      try {
-        await submitFocusScore(id, finalStats)
-      } catch (e) { /* non-critical */ }
-    }
+    if (exiting) return
+    setExiting(true)
+    let finalStats = null
+    if (isTracking) finalStats = stopTracking()
     cleanupCall()
-    navigate(`/sessions/${id}`)
-  }, [id, isTracking, stopTracking, cleanupCall, navigate])
 
-  const handleToggleFocus = useCallback(() => {
+    try {
+      if (finalStats && finalStats.durationSeconds > 0) {
+        await submitFocusScore(id, finalStats)
+      }
+    } catch (e) { /* non-critical */ }
+
+    // If we tracked focus, show the summary before leaving so the user sees their stats
+    if (finalStats && finalStats.durationSeconds > 0) {
+      try {
+        const scores = await fetchFocusScores(id)
+        setFocusScores(scores || [])
+      } catch (e) { /* non-critical */ }
+      showSummaryRef.current = true
+      setShowSummary(true)
+    } else {
+      navigate(`/sessions/${id}`)
+    }
+  }, [id, exiting, isTracking, stopTracking, cleanupCall, navigate])
+
+  const handleToggleFocus = useCallback(async () => {
     if (isTracking) {
       stopTracking()
-    } else {
-      const videoEl = document.querySelector('#focus-video')
-      if (videoEl) startTracking(videoEl)
+      return
     }
-  }, [isTracking, startTracking, stopTracking])
+    if (!localStream) {
+      alert('Turn on your camera first to enable focus tracking.')
+      return
+    }
+    const videoEl = document.querySelector('#focus-video')
+    if (!videoEl) return
+    // Make sure the video has a stream and is decoding before we start
+    if (!videoEl.srcObject) videoEl.srcObject = localStream
+    if (videoEl.readyState < 2) {
+      try {
+        await new Promise((resolve, reject) => {
+          const onReady = () => { videoEl.removeEventListener('loadeddata', onReady); resolve() }
+          videoEl.addEventListener('loadeddata', onReady, { once: true })
+          setTimeout(reject, 5000) // give up after 5s
+        })
+      } catch (e) {
+        alert('Camera not ready yet, try again in a moment.')
+        return
+      }
+    }
+    startTracking(videoEl)
+  }, [isTracking, startTracking, stopTracking, localStream])
 
   if (loading) {
     return (
@@ -239,6 +324,20 @@ export default function LiveSessionPage() {
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-slate-400">Session not found</p>
       </div>
+    )
+  }
+
+  // Summary takes priority — works for creators, polled-out participants, and leavers
+  if (showSummary) {
+    return (
+      <SessionSummary
+        focusScores={focusScores}
+        currentUser={user}
+        onClose={() => {
+          setShowSummary(false)
+          navigate(`/sessions/${id}`)
+        }}
+      />
     )
   }
 
@@ -351,28 +450,31 @@ export default function LiveSessionPage() {
         )}
       </div>
 
+      {/*
+        Focus tracker source. We can't use display:none — the browser stops
+        decoding frames and the detector never sees the user. Position it
+        offscreen instead so it actually plays.
+      */}
       <video
         id="focus-video"
         ref={(el) => {
           videoRef.current = el
-          if (el && localStream) el.srcObject = localStream
+          if (el && localStream && el.srcObject !== localStream) el.srcObject = localStream
         }}
         autoPlay
         playsInline
         muted
-        className="hidden"
+        style={{
+          position: 'fixed',
+          left: '-9999px',
+          top: 0,
+          width: '320px',
+          height: '240px',
+          opacity: 0,
+          pointerEvents: 'none',
+        }}
       />
 
-      {showSummary && (
-        <SessionSummary
-          focusScores={focusScores}
-          currentUser={user}
-          onClose={() => {
-            setShowSummary(false)
-            navigate(`/sessions/${id}`)
-          }}
-        />
-      )}
     </div>
   )
 }

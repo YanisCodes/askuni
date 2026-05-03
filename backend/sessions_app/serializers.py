@@ -57,3 +57,23 @@ class FocusScoreSerializer(serializers.ModelSerializer):
         model = FocusScore
         fields = ['id', 'session', 'user', 'score', 'focused_seconds', 'distracted_seconds', 'phone_alerts_count', 'duration_seconds', 'created_at']
         read_only_fields = ['id', 'user', 'created_at']
+
+
+class FocusScoreHistorySerializer(serializers.ModelSerializer):
+    """Focus score with embedded session info, for personal history view."""
+    session = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FocusScore
+        fields = ['id', 'session', 'score', 'focused_seconds', 'distracted_seconds', 'phone_alerts_count', 'duration_seconds', 'created_at']
+
+    def get_session(self, obj):
+        s = obj.session
+        return {
+            'id': s.id,
+            'module': ModuleSerializer(s.module).data if s.module_id else None,
+            'chapter': s.chapter,
+            'date': s.date,
+            'time_slot': s.time_slot,
+            'status': s.status,
+        }

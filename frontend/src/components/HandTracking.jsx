@@ -1,18 +1,20 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Hands, HAND_CONNECTIONS } from "@mediapipe/hands";
+import { HandLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { Camera } from "@mediapipe/camera_utils";
 
-// Finger color mapping
+const CDN = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.32/wasm";
+const MODEL_URL =
+  "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+
 const FINGER_COLORS = {
-  thumb: "#f59e0b",   // amber
-  index: "#22c55e",   // green
-  middle: "#3b82f6",  // blue
-  ring: "#a855f7",    // purple
-  pinky: "#f43f5e",   // rose
-  palm: "#94a3b8",    // slate
+  thumb: "#f59e0b",
+  index: "#22c55e",
+  middle: "#3b82f6",
+  ring: "#a855f7",
+  pinky: "#f43f5e",
+  palm: "#94a3b8",
 };
 
-// Map landmark index to finger
 function getFingerColor(idx) {
   if (idx >= 1 && idx <= 4) return FINGER_COLORS.thumb;
   if (idx >= 5 && idx <= 8) return FINGER_COLORS.index;
@@ -26,98 +28,90 @@ export default function HandTrackingComponent({ onDetection }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const cameraRef = useRef(null);
+  const landmarkerRef = useRef(null);
   const [isRunning, setIsRunning] = useState(false);
   const [handCount, setHandCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const drawResults = useCallback((results) => {
-    const canvas = canvasRef.current;
-    const video = videoRef.current;
-    if (!canvas || !video) return;
+  const drawResults = useCallback(
+    (results) => {
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+      if (!canvas || !video) return;
 
-    const ctx = canvas.getContext("2d");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const hands = results.landmarks || [];
+      const handedness = results.handedness || [];
+      setHandCount(hands.length);
+      if (onDetection) onDetection(hands);
 
-    const hands = results.multiHandLandmarks || [];
-    const handedness = results.multiHandedness || [];
-    setHandCount(hands.length);
+      hands.forEach((landmarks, handIdx) => {
+        const w = canvas.width;
+        const h = canvas.height;
 
-    if (onDetection) {
-      onDetection(hands);
-    }
+        for (const { start: startIdx, end: endIdx } of HandLandmarker.HAND_CONNECTIONS) {
+          const start = landmarks[startIdx];
+          const end = landmarks[endIdx];
+          if (!start || !end) continue;
+          const color = getFingerColor(endIdx);
+          ctx.beginPath();
+          ctx.moveTo(start.x * w, start.y * h);
+          ctx.lineTo(end.x * w, end.y * h);
+          ctx.strokeStyle = color + "99";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
 
-    hands.forEach((landmarks, handIdx) => {
-      const w = canvas.width;
-      const h = canvas.height;
+        landmarks.forEach((point, i) => {
+          const px = point.x * w;
+          const py = point.y * h;
+          const color = getFingerColor(i);
+          const isJoint = i === 0 || i % 4 === 0;
+          const radius = isJoint ? 4 : 3;
 
-      // Draw connections
-      for (const [startIdx, endIdx] of HAND_CONNECTIONS) {
-        const start = landmarks[startIdx];
-        const end = landmarks[endIdx];
-        if (!start || !end) continue;
+          ctx.beginPath();
+          ctx.arc(px, py, radius + 3, 0, 2 * Math.PI);
+          ctx.fillStyle = color + "22";
+          ctx.fill();
 
-        const color = getFingerColor(endIdx);
+          ctx.beginPath();
+          ctx.arc(px, py, radius, 0, 2 * Math.PI);
+          ctx.fillStyle = color;
+          ctx.fill();
 
-        ctx.beginPath();
-        ctx.moveTo(start.x * w, start.y * h);
-        ctx.lineTo(end.x * w, end.y * h);
-        ctx.strokeStyle = color + "99";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
+          ctx.beginPath();
+          ctx.arc(px, py, 1.2, 0, 2 * Math.PI);
+          ctx.fillStyle = "#fff";
+          ctx.fill();
+        });
 
-      // Draw landmarks
-      landmarks.forEach((point, i) => {
-        const px = point.x * w;
-        const py = point.y * h;
-        const color = getFingerColor(i);
-        const isJoint = i === 0 || i % 4 === 0;
-        const radius = isJoint ? 4 : 3;
+        const label = handedness[handIdx]?.[0]?.categoryName || "";
+        if (label && landmarks[0]) {
+          const wristX = landmarks[0].x * w;
+          const wristY = landmarks[0].y * h;
 
-        // Outer glow
-        ctx.beginPath();
-        ctx.arc(px, py, radius + 3, 0, 2 * Math.PI);
-        ctx.fillStyle = color + "22";
-        ctx.fill();
+          ctx.font = "600 12px system-ui, sans-serif";
+          const textW = ctx.measureText(label).width;
 
-        // Main dot
-        ctx.beginPath();
-        ctx.arc(px, py, radius, 0, 2 * Math.PI);
-        ctx.fillStyle = color;
-        ctx.fill();
+          ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+          ctx.beginPath();
+          ctx.roundRect(wristX - (textW + 12) / 2, wristY + 10, textW + 12, 22, 6);
+          ctx.fill();
 
-        // White center
-        ctx.beginPath();
-        ctx.arc(px, py, 1.2, 0, 2 * Math.PI);
-        ctx.fillStyle = "#fff";
-        ctx.fill();
+          ctx.fillStyle = "#fff";
+          ctx.textAlign = "center";
+          ctx.fillText(label, wristX, wristY + 25);
+          ctx.textAlign = "start";
+        }
       });
-
-      // Hand label (Left/Right)
-      const label = handedness[handIdx]?.label || "";
-      if (label && landmarks[0]) {
-        const wristX = landmarks[0].x * w;
-        const wristY = landmarks[0].y * h;
-
-        ctx.font = "600 12px system-ui, sans-serif";
-        const textW = ctx.measureText(label).width;
-
-        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-        ctx.beginPath();
-        ctx.roundRect(wristX - (textW + 12) / 2, wristY + 10, textW + 12, 22, 6);
-        ctx.fill();
-
-        ctx.fillStyle = "#fff";
-        ctx.textAlign = "center";
-        ctx.fillText(label, wristX, wristY + 25);
-        ctx.textAlign = "start";
-      }
-    });
-  }, [onDetection]);
+    },
+    [onDetection]
+  );
 
   const startCamera = useCallback(async () => {
     if (isRunning) return;
@@ -125,33 +119,28 @@ export default function HandTrackingComponent({ onDetection }) {
     setError(null);
 
     try {
-      const hands = new Hands({
-        locateFile: (file) =>
-          `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
-      });
-
-      hands.setOptions({
-        maxNumHands: 2,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.5,
+      const vision = await FilesetResolver.forVisionTasks(CDN);
+      const landmarker = await HandLandmarker.createFromOptions(vision, {
+        baseOptions: { modelAssetPath: MODEL_URL, delegate: "GPU" },
+        runningMode: "VIDEO",
+        numHands: 2,
+        minHandDetectionConfidence: 0.5,
+        minHandPresenceConfidence: 0.5,
         minTrackingConfidence: 0.5,
       });
-
-      hands.onResults(drawResults);
-
-      await hands.initialize();
+      landmarkerRef.current = landmarker;
 
       if (videoRef.current) {
         const camera = new Camera(videoRef.current, {
-          onFrame: async () => {
-            if (videoRef.current) {
-              await hands.send({ image: videoRef.current });
+          onFrame: () => {
+            if (videoRef.current && landmarkerRef.current) {
+              const results = landmarkerRef.current.detectForVideo(videoRef.current, Date.now());
+              drawResults(results);
             }
           },
           width: 640,
           height: 480,
         });
-
         cameraRef.current = camera;
         await camera.start();
         setIsRunning(true);
@@ -172,9 +161,12 @@ export default function HandTrackingComponent({ onDetection }) {
       cameraRef.current.stop();
       cameraRef.current = null;
     }
+    if (landmarkerRef.current) {
+      landmarkerRef.current.close();
+      landmarkerRef.current = null;
+    }
     setIsRunning(false);
     setHandCount(0);
-
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext("2d");
@@ -184,16 +176,13 @@ export default function HandTrackingComponent({ onDetection }) {
 
   useEffect(() => {
     return () => {
-      if (cameraRef.current) {
-        cameraRef.current.stop();
-        cameraRef.current = null;
-      }
+      if (cameraRef.current) { cameraRef.current.stop(); cameraRef.current = null; }
+      if (landmarkerRef.current) { landmarkerRef.current.close(); landmarkerRef.current = null; }
     };
   }, []);
 
   return (
     <div className="space-y-4">
-      {/* Camera viewport */}
       <div className="relative rounded-2xl overflow-hidden bg-slate-900 aspect-[4/3]">
         <video
           ref={videoRef}
@@ -209,7 +198,6 @@ export default function HandTrackingComponent({ onDetection }) {
           style={{ display: isRunning ? "block" : "none" }}
         />
 
-        {/* Idle state */}
         {!isRunning && !loading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -222,7 +210,6 @@ export default function HandTrackingComponent({ onDetection }) {
           </div>
         )}
 
-        {/* Loading state */}
         {loading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
             <div className="w-8 h-8 border-2 border-slate-600 border-t-white rounded-full animate-spin" />
@@ -230,26 +217,23 @@ export default function HandTrackingComponent({ onDetection }) {
           </div>
         )}
 
-        {/* Hand count overlay */}
         {isRunning && (
-          <div className="absolute top-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium"
-               style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", color: "#fff" }}>
+          <div
+            className="absolute top-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium"
+            style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", color: "#fff" }}
+          >
             <span className={`w-2 h-2 rounded-full ${handCount > 0 ? "bg-emerald-400" : "bg-slate-400"}`} />
-            {handCount === 0
-              ? "No hands detected"
-              : `${handCount} hand${handCount > 1 ? "s" : ""} detected`}
+            {handCount === 0 ? "No hands detected" : `${handCount} hand${handCount > 1 ? "s" : ""} detected`}
           </div>
         )}
       </div>
 
-      {/* Error message */}
       {error && (
         <div className="bg-rose-50/80 border border-rose-200/60 text-rose-600 text-sm rounded-xl px-4 py-3">
           {error}
         </div>
       )}
 
-      {/* Controls */}
       <div className="flex gap-3">
         {!isRunning ? (
           <button

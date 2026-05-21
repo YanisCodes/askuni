@@ -16,6 +16,11 @@ export async function fetchProfile() {
   return data;
 }
 
+export async function updateProfile({ name }) {
+  const { data } = await apiClient.patch('/profile/', { name });
+  return data;
+}
+
 // ---- Modules ----
 export async function fetchModules() {
   const { data } = await apiClient.get('/modules/');
@@ -133,6 +138,10 @@ export async function fetchPeerRegistry(sessionId) {
   return data;
 }
 
+export async function deregisterPeer(sessionId) {
+  await apiClient.delete(`/sessions/${sessionId}/peer-registry/`);
+}
+
 // ---- Notifications ----
 export async function fetchNotifications() {
   const { data } = await apiClient.get('/notifications/');
@@ -159,4 +168,13 @@ export async function fetchSuggestions(moduleId, timeSlots) {
 export async function fetchResources() {
   const { data } = await apiClient.get('/resources/');
   return data;
+}
+
+// ---- Admin ----
+export async function deleteQuestion(id) {
+  await apiClient.delete(`/questions/${id}/`);
+}
+
+export async function deleteSession(id) {
+  await apiClient.delete(`/sessions/${id}/`);
 }

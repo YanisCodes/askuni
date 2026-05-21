@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { subscribeToChat, uploadChatFile } from '../../services/realtimeChat'
 import { fetchSessionMessages, sendChatMessage } from '../../services/api'
 import { formatRelativeTime } from '../../utils/formatTime'
 import { Send, Image, FileText, X } from 'lucide-react'
 
-export default function ChatPanel({ sessionId, isOpen, onClose }) {
+export default function ChatPanel({ sessionId, isOpen, onClose, participants = [] }) {
   const { user } = useAuth()
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
@@ -13,6 +13,21 @@ export default function ChatPanel({ sessionId, isOpen, onClose }) {
   const messagesEndRef = useRef(null)
   const fileInputRef = useRef(null)
   const imageInputRef = useRef(null)
+
+  // Build a lookup so Supabase realtime rows (which have user_id, not user.name) can be enriched
+  const participantMap = useMemo(
+    () => Object.fromEntries(participants.map((p) => [p.id, p])),
+    [participants]
+  )
+  const participantMapRef = useRef(participantMap)
+  useEffect(() => { participantMapRef.current = participantMap }, [participantMap])
+
+  const enrichRealtimeMsg = (raw) => {
+    // Supabase sends snake_case DB columns; user_id is the FK
+    const userId = raw.user_id
+    const resolvedUser = userId ? participantMapRef.current[userId] : null
+    return { ...raw, user: resolvedUser || raw.user || null }
+  }
 
   useEffect(() => {
     let ignore = false
@@ -22,7 +37,7 @@ export default function ChatPanel({ sessionId, isOpen, onClose }) {
     const unsubscribe = subscribeToChat(sessionId, (msg) => {
       setMessages((prev) => {
         if (prev.some((m) => m.id === msg.id)) return prev
-        return [...prev, msg]
+        return [...prev, enrichRealtimeMsg(msg)]
       })
     })
 

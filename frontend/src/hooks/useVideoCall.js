@@ -107,13 +107,15 @@ export default function useVideoCall(userId, hostPeerId) {
       setRemoteStreams({ ...remoteStreamsRef.current })
     })
 
-    call.on('close', () => {
+    const cleanupCall = () => {
       if (callsRef.current[remotePeerId] === call) {
         delete callsRef.current[remotePeerId]
       }
       delete remoteStreamsRef.current[remotePeerId]
       setRemoteStreams({ ...remoteStreamsRef.current })
-    })
+    }
+    call.on('close', cleanupCall)
+    call.on('error', cleanupCall)
   }, [peer, myPeerId])
 
   const toggleMute = useCallback(() => {

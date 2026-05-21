@@ -23,12 +23,19 @@ def question_list(request):
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'DELETE'])
 def question_detail(request, pk):
     try:
         question = Question.objects.select_related('author', 'module').prefetch_related('answers__author').get(pk=pk)
     except Question.DoesNotExist:
         return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'DELETE':
+        if not request.user.is_staff and question.author != request.user:
+            return Response({'detail': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+        question.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     serializer = QuestionDetailSerializer(question, context={'request': request})
     return Response(serializer.data)
 

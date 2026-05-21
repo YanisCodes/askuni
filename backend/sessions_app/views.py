@@ -24,12 +24,19 @@ def session_list(request):
     return Response(SessionListSerializer(session).data, status=status.HTTP_201_CREATED)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'DELETE'])
 def session_detail(request, pk):
     try:
         session = StudySession.objects.select_related('module', 'creator').prefetch_related('participants').get(pk=pk)
     except StudySession.DoesNotExist:
         return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'DELETE':
+        if not request.user.is_staff and session.creator != request.user:
+            return Response({'detail': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+        session.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     return Response(SessionDetailSerializer(session).data)
 
 
@@ -200,7 +207,7 @@ def my_focus_history(request):
     return Response(serializer.data)
 
 
-@api_view(['POST', 'GET'])
+@api_view(['POST', 'GET', 'DELETE'])
 def register_peer(request, pk):
     """Register or retrieve peer IDs for mesh networking in live sessions."""
     try:
@@ -211,18 +218,24 @@ def register_peer(request, pk):
     if request.user not in session.participants.all() and request.user != session.creator:
         return Response({'detail': 'Not a participant'}, status=status.HTTP_403_FORBIDDEN)
 
+    if request.method == 'DELETE':
+        if session.active_peer_ids and str(request.user.id) in session.active_peer_ids:
+            del session.active_peer_ids[str(request.user.id)]
+            session.save(update_fields=['active_peer_ids'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     if request.method == 'POST':
         peer_id = request.data.get('peer_id', '')
         if not peer_id:
             return Response({'detail': 'peer_id is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Register or update peer ID for this user
         if not session.active_peer_ids:
             session.active_peer_ids = {}
         session.active_peer_ids[str(request.user.id)] = peer_id
         session.save()
-        
+
         return Response({'active_peer_ids': session.active_peer_ids})
-    
+
     # GET: return all active peer IDs
     return Response({'active_peer_ids': session.active_peer_ids or {}})

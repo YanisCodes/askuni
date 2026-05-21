@@ -11,10 +11,10 @@ import CreateSessionPage from './pages/sessions/CreateSessionPage'
 import SessionDetailPage from './pages/sessions/SessionDetailPage'
 import PlannerInputPage from './pages/planner/PlannerInputPage'
 import PlannerResultPage from './pages/planner/PlannerResultPage'
-import CameraSettings from './pages/camera/CameraSettings'
 import LiveSessionPage from './pages/sessions/LiveSessionPage'
 import FocusHistoryPage from './pages/focus/FocusHistoryPage'
 import LandingPage from './pages/LandingPage'
+import SettingsPage from './pages/settings/SettingsPage'
 
 
 function App() {
@@ -34,7 +34,8 @@ function App() {
           <Route path="/sessions/:id" element={<SessionDetailPage />} />
           <Route path="/planner" element={<PlannerInputPage />} />
           <Route path="/planner/results" element={<PlannerResultPage />} />
-          <Route path="/camera" element={<CameraSettings />} />
+          <Route path="/camera" element={<Navigate to="/settings" replace />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="/focus-history" element={<FocusHistoryPage />} />
         </Route>
         <Route path="/sessions/:id/live" element={<LiveSessionPage />} />

@@ -41,6 +41,13 @@ export default function SessionDetailPage() {
     loadSession();
   }, [loadSession]);
 
+  // Keep participant list fresh for all viewers (host sees joins/leaves in real-time)
+  useEffect(() => {
+    if (!session || session.status === 'ended') return;
+    const interval = setInterval(loadSession, 5000);
+    return () => clearInterval(interval);
+  }, [session?.status, loadSession]);
+
   useEffect(() => {
     if (session?.status === 'ended') {
       fetchFocusScores(session.id).then(setFocusScores).catch(() => {});

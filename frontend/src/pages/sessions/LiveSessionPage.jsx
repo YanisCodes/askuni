@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useData } from '../../contexts/DataContext'
 import useVideoCall from '../../hooks/useVideoCall'
 import useFocusTracker from '../../hooks/useFocusTracker'
+import { getPrefs } from '../../hooks/usePreferences'
 import {
   startSession as apiStartSession,
   endSession as apiEndSession,
@@ -12,6 +13,7 @@ import {
   fetchFocusScores,
   registerPeer,
   fetchPeerRegistry,
+  deregisterPeer,
 } from '../../services/api'
 import VideoGrid from '../../components/live/VideoGrid'
 import ControlBar from '../../components/live/ControlBar'
@@ -114,17 +116,27 @@ export default function LiveSessionPage() {
     })
   }, [session?.status, myPeerId, initPeer])
 
-  // Auto-start local camera/mic once we're in a live session and have a peer
+  // Auto-start local camera/mic once we're in a live session and have a peer,
+  // respecting the user's defaultCamOn preference.
   const mediaRequestedRef = useRef(false)
   useEffect(() => {
     if (!session || session.status !== 'live' || !myPeerId) return
     if (localStream || mediaRequestedRef.current) return
+    const { defaultCamOn, defaultMicOn } = getPrefs()
+    if (!defaultCamOn) return
     mediaRequestedRef.current = true
-    startLocalStream().catch(e => {
-      console.error('Failed to start local stream:', e)
-      mediaRequestedRef.current = false
-    })
-  }, [session?.status, myPeerId, localStream, startLocalStream])
+    startLocalStream()
+      .then(stream => {
+        if (stream && !defaultMicOn) {
+          stream.getAudioTracks().forEach(t => { t.enabled = false })
+          toggleMute()
+        }
+      })
+      .catch(e => {
+        console.error('Failed to start local stream:', e)
+        mediaRequestedRef.current = false
+      })
+  }, [session?.status, myPeerId, localStream, startLocalStream, toggleMute])
 
   const isCreator = user?.id === session?.creator?.id
   const isParticipant = session?.participantIds?.includes(user?.id)
@@ -134,34 +146,48 @@ export default function LiveSessionPage() {
   useEffect(() => {
     if (!session || session.status !== 'live' || !myPeerId) return
     if (!isParticipant && !isCreator) return
-    
+
     registerPeer(Number(id), myPeerId).catch(e => {
       console.error('Failed to register peer:', e)
     })
   }, [session?.status, myPeerId, id, isParticipant, isCreator])
 
-  // Mesh networking: discover and connect to other participants
+  // Deregister peer on unmount so other participants stop seeing us immediately
   useEffect(() => {
-    if (!session || session.status !== 'live' || !myPeerId) return
-    
-    const discoveryInterval = setInterval(async () => {
+    return () => {
+      deregisterPeer(Number(id)).catch(() => {})
+    }
+  }, [id])
+
+  // Mesh networking: discover and connect to participants.
+  // Uses a deterministic tie-breaking rule: the participant with the LOWER user
+  // ID always initiates the call to the one with the HIGHER user ID. This
+  // prevents both sides calling each other simultaneously, which would cause
+  // each side's listenForIncomingCalls to close the other's outgoing call and
+  // leave both stuck with stale callsRef entries and no stream.
+  const myUserId = user?.id
+  useEffect(() => {
+    if (!session || session.status !== 'live' || !myPeerId || !localStream || !myUserId) return
+
+    const discover = async () => {
       try {
         const registry = await fetchPeerRegistry(Number(id))
         const activePeerIds = registry.activePeerIds || {}
-        
-        // Try to connect to each participant (except self and those already connected)
-        Object.entries(activePeerIds).forEach(([userId, peerId]) => {
-          if (peerId !== myPeerId) {
+        Object.entries(activePeerIds).forEach(([remoteUserIdStr, peerId]) => {
+          const remoteUserId = parseInt(remoteUserIdStr, 10)
+          // Only call peers with a higher user ID — they will not call us back,
+          // ensuring exactly one connection direction per pair.
+          if (peerId !== myPeerId && myUserId < remoteUserId) {
             connectToPeer(peerId)
           }
         })
-      } catch (e) {
-        // Suppress network logs if polling fails gracefully
-      }
-    }, 2000) // Poll every 2 seconds
-    
+      } catch (e) { /* ignore */ }
+    }
+
+    discover()
+    const discoveryInterval = setInterval(discover, 2000)
     return () => clearInterval(discoveryInterval)
-  }, [session?.status, myPeerId, id, connectToPeer])
+  }, [session?.status, myPeerId, localStream, id, connectToPeer, myUserId])
 
   // Auto-join if user navigates to a live session they aren't part of
   const autoJoinedRef = useRef(false)
@@ -423,6 +449,7 @@ export default function LiveSessionPage() {
               localStream={localStream}
               remoteStreams={remoteStreams}
               participants={session.participants || []}
+              activePeerIds={session.activePeerIds || {}}
             />
           </div>
 
@@ -445,6 +472,7 @@ export default function LiveSessionPage() {
               sessionId={Number(id)}
               isOpen={chatOpen}
               onClose={() => setChatOpen(false)}
+              participants={session.participants || []}
             />
           </div>
         )}

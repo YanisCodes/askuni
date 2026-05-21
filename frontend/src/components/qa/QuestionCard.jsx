@@ -1,15 +1,33 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Badge from '../common/Badge';
 import { formatRelativeTime } from '../../utils/formatTime';
-import { MessageSquare, User } from 'lucide-react';
+import { MessageSquare, User, Trash2 } from 'lucide-react';
 import VoteButtons from './VoteButtons';
 import { useData } from '../../contexts/DataContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function QuestionCard({ question, author, module, answerCount = 0 }) {
-  const { voteOnQuestion } = useData();
+  const { voteOnQuestion, removeQuestion } = useData();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [deleting, setDeleting] = useState(false);
 
   const handleVote = async (value) => {
     await voteOnQuestion(question.id, value);
+  };
+
+  const handleDelete = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm('Delete this question and all its answers?')) return;
+    setDeleting(true);
+    try {
+      await removeQuestion(question.id);
+      navigate('/');
+    } catch {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -51,9 +69,22 @@ export default function QuestionCard({ question, author, module, answerCount = 0
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-primary-500 shrink-0 bg-primary-100/70 px-2.5 py-1 rounded-md tabular-nums">
-              <MessageSquare size={13} strokeWidth={1.8} />
-              <span>{answerCount}</span>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-primary-500 bg-primary-100/70 px-2.5 py-1 rounded-md tabular-nums">
+                <MessageSquare size={13} strokeWidth={1.8} />
+                <span>{answerCount}</span>
+              </div>
+
+              {user?.isAdmin && (
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="p-1.5 rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+                  title="Delete question"
+                >
+                  <Trash2 size={14} strokeWidth={1.8} />
+                </button>
+              )}
             </div>
           </div>
         </div>

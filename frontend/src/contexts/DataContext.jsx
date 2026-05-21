@@ -16,6 +16,8 @@ import {
   voteAnswer,
   startSession as apiStartSession,
   endSession as apiEndSession,
+  deleteQuestion as apiDeleteQuestion,
+  deleteSession as apiDeleteSession,
 } from '../services/api';
 import { useAuth } from './AuthContext';
 import { useNotifications } from './NotificationContext';
@@ -139,6 +141,16 @@ export function DataProvider({ children }) {
     return updated;
   }, []);
 
+  const removeQuestion = useCallback(async (questionId) => {
+    await apiDeleteQuestion(questionId);
+    setQuestions(prev => prev.filter(q => q.id !== questionId));
+  }, []);
+
+  const removeSession = useCallback(async (sessionId) => {
+    await apiDeleteSession(sessionId);
+    setSessions(prev => prev.filter(s => s.id !== sessionId));
+  }, []);
+
   const value = {
     questions,
     sessions,
@@ -158,6 +170,8 @@ export function DataProvider({ children }) {
     refreshSessions,
     voteOnQuestion,
     voteOnAnswer,
+    removeQuestion,
+    removeSession,
   };
 
   return (

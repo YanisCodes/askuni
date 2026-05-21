@@ -36,9 +36,9 @@ class SessionDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'module', 'module_id', 'chapter', 'date', 'time_slot',
             'creator', 'participant_ids', 'participants', 'max_participants',
-            'status', 'started_at', 'ended_at', 'host_peer_id', 'created_at'
+            'status', 'started_at', 'ended_at', 'host_peer_id', 'active_peer_ids', 'created_at'
         ]
-        read_only_fields = ['id', 'creator', 'created_at', 'status', 'started_at', 'ended_at', 'host_peer_id']
+        read_only_fields = ['id', 'creator', 'created_at', 'status', 'started_at', 'ended_at', 'host_peer_id', 'active_peer_ids']
 
 
 class ChatMessageSerializer(serializers.ModelSerializer):

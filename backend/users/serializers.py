@@ -4,13 +4,17 @@ from rest_framework import serializers
 
 class UserSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
+    is_admin = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'email']
+        fields = ['id', 'name', 'email', 'is_admin']
 
     def get_name(self, obj):
         return obj.first_name or obj.username
+
+    def get_is_admin(self, obj):
+        return obj.is_staff
 
 
 class RegisterSerializer(serializers.Serializer):

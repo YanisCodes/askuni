@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react';
-import { loginUser, registerUser } from '../services/api';
+import { loginUser, registerUser, updateProfile as apiUpdateProfile } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -46,6 +46,13 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('askuni_refresh_token');
   }, []);
 
+  const updateUser = useCallback(async ({ name }) => {
+    const updated = await apiUpdateProfile({ name });
+    localStorage.setItem('askuni_user', JSON.stringify(updated));
+    setUser(updated);
+    return updated;
+  }, []);
+
   const isAuthenticated = user !== null;
 
   const value = {
@@ -54,6 +61,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    updateUser,
   };
 
   return (

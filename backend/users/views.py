@@ -44,6 +44,11 @@ def login_view(request):
     })
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PATCH'])
 def profile_view(request):
+    if request.method == 'PATCH':
+        name = (request.data.get('name') or '').strip()
+        if name:
+            request.user.first_name = name
+            request.user.save(update_fields=['first_name'])
     return Response(UserSerializer(request.user).data)

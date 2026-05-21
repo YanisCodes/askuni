@@ -1,15 +1,18 @@
-export default function VideoGrid({ currentUser, localStream, remoteStreams, participants }) {
+export default function VideoGrid({ currentUser, localStream, remoteStreams, participants, activePeerIds = {} }) {
   const remoteEntries = Object.entries(remoteStreams)
-  // Ensure the displayList has the current user first
+
+  // Only show participants who have registered a peer ID (actually clicked Join Live Session)
+  const activePeerUserIds = new Set(Object.keys(activePeerIds).map(Number))
+
   const displayList = []
-  
+
   if (currentUser) {
     displayList.push(currentUser)
   }
 
-  // Add all other participants
+  // Add only participants who are actively in the call
   participants?.forEach(p => {
-    if (p.id !== currentUser?.id) {
+    if (p.id !== currentUser?.id && activePeerUserIds.has(p.id)) {
       displayList.push(p)
     }
   })

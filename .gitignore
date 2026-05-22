@@ -32,4 +32,6 @@ skills-lock.json
 
 # Project Management
 prd.txt
-prd.txt
+
+# Local assets not for version control
+diagrams/

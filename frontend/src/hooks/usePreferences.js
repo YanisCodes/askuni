@@ -6,6 +6,10 @@ const DEFAULTS = {
   defaultMicOn: true,
 }
 
+/**
+ * Reads the current user preferences from localStorage, falling back to defaults.
+ * @returns {{ defaultCamOn: boolean, defaultMicOn: boolean }}
+ */
 export function getPrefs() {
   try {
     const raw = localStorage.getItem(PREFS_KEY)
@@ -15,6 +19,10 @@ export function getPrefs() {
   }
 }
 
+/**
+ * Reactive hook for reading and toggling user preferences persisted in localStorage.
+ * @returns {{ prefs: object, togglePref: (key: string) => void }}
+ */
 export default function usePreferences() {
   const [prefs, setPrefs] = useState(getPrefs)
 

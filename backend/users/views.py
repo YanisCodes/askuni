@@ -11,6 +11,7 @@ from .serializers import RegisterSerializer, UserSerializer
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_view(request):
+    """Register a new user and return JWT access and refresh tokens."""
     serializer = RegisterSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = serializer.save()
@@ -25,6 +26,7 @@ def register_view(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
+    """Authenticate by email/password and return JWT access and refresh tokens."""
     email = request.data.get('email')
     password = request.data.get('password')
     try:
@@ -46,6 +48,7 @@ def login_view(request):
 
 @api_view(['GET', 'PATCH'])
 def profile_view(request):
+    """Retrieve or update the authenticated user's display name."""
     if request.method == 'PATCH':
         name = (request.data.get('name') or '').strip()
         if name:

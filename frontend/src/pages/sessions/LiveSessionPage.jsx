@@ -213,9 +213,7 @@ export default function LiveSessionPage() {
         return 
       }
 
-      console.log('Starting session with peer:', peer.id)
       const updated = await apiStartSession(id, { hostPeerId: peer.id })
-      console.log('Session started, updated:', updated)
       setSession(updated)
     } catch (err) {
       console.error('Failed to start session:', err)

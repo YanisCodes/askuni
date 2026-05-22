@@ -12,6 +12,7 @@ from notifications_app.models import Notification
 
 @api_view(['GET', 'POST'])
 def question_list(request):
+    """List all questions or create a new one."""
     if request.method == 'GET':
         questions = Question.objects.select_related('author', 'module').prefetch_related('answers').all()
         serializer = QuestionListSerializer(questions, many=True, context={'request': request})
@@ -25,6 +26,7 @@ def question_list(request):
 
 @api_view(['GET', 'DELETE'])
 def question_detail(request, pk):
+    """Retrieve or delete a single question by ID."""
     try:
         question = Question.objects.select_related('author', 'module').prefetch_related('answers__author').get(pk=pk)
     except Question.DoesNotExist:
@@ -42,6 +44,7 @@ def question_detail(request, pk):
 
 @api_view(['POST'])
 def add_answer(request, pk):
+    """Post an answer to a question and notify the question author."""
     try:
         question = Question.objects.get(pk=pk)
     except Question.DoesNotExist:
@@ -64,6 +67,7 @@ def add_answer(request, pk):
 
 @api_view(['POST'])
 def vote_question(request, pk):
+    """Toggle or flip an upvote/downvote on a question."""
     try:
         question = Question.objects.get(pk=pk)
     except Question.DoesNotExist:
@@ -95,6 +99,7 @@ def vote_question(request, pk):
 
 @api_view(['POST'])
 def vote_answer(request, pk):
+    """Toggle or flip an upvote/downvote on an answer."""
     try:
         answer = Answer.objects.get(pk=pk)
     except Answer.DoesNotExist:
@@ -126,11 +131,13 @@ def vote_answer(request, pk):
 
 @api_view(['GET'])
 def module_list(request):
+    """Return all available course modules."""
     modules = Module.objects.all()
     return Response(ModuleSerializer(modules, many=True).data)
 
 
 @api_view(['GET'])
 def resource_list(request):
+    """Return all learning resources."""
     resources = Resource.objects.all()
     return Response(ResourceSerializer(resources, many=True).data)

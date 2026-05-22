@@ -1,3 +1,4 @@
+// Central data store for modules, questions, sessions, and votes.
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { TIME_SLOTS } from '../data/constants';
 import {

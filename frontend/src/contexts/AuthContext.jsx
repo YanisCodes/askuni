@@ -1,3 +1,4 @@
+// Manages authentication state, JWT token storage, and user profile updates.
 import { createContext, useContext, useState, useCallback } from 'react';
 import { loginUser, registerUser, updateProfile as apiUpdateProfile } from '../services/api';
 

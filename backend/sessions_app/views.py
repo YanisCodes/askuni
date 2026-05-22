@@ -12,6 +12,7 @@ from notifications_app.models import Notification
 
 @api_view(['GET', 'POST'])
 def session_list(request):
+    """List all sessions or create a new one."""
     if request.method == 'GET':
         sessions = StudySession.objects.select_related('module', 'creator').prefetch_related('participants').all()
         serializer = SessionListSerializer(sessions, many=True)
@@ -26,6 +27,7 @@ def session_list(request):
 
 @api_view(['GET', 'DELETE'])
 def session_detail(request, pk):
+    """Retrieve or delete a single session by ID."""
     try:
         session = StudySession.objects.select_related('module', 'creator').prefetch_related('participants').get(pk=pk)
     except StudySession.DoesNotExist:
@@ -42,6 +44,7 @@ def session_detail(request, pk):
 
 @api_view(['POST'])
 def join_session(request, pk):
+    """Add the current user to a session's participant list."""
     try:
         session = StudySession.objects.prefetch_related('participants').get(pk=pk)
     except StudySession.DoesNotExist:
@@ -66,6 +69,7 @@ def join_session(request, pk):
 
 @api_view(['POST'])
 def leave_session(request, pk):
+    """Remove the current user from a session's participant list."""
     try:
         session = StudySession.objects.prefetch_related('participants').get(pk=pk)
     except StudySession.DoesNotExist:
@@ -83,6 +87,7 @@ def leave_session(request, pk):
 
 @api_view(['POST'])
 def start_session(request, pk):
+    """Mark a session as live and broadcast a notification to all participants."""
     try:
         session = StudySession.objects.get(pk=pk)
     except StudySession.DoesNotExist:
@@ -116,6 +121,7 @@ def start_session(request, pk):
 
 @api_view(['POST'])
 def end_session(request, pk):
+    """Mark a session as ended and clear the active peer registry."""
     try:
         session = StudySession.objects.get(pk=pk)
     except StudySession.DoesNotExist:
@@ -138,6 +144,7 @@ def end_session(request, pk):
 
 @api_view(['GET', 'POST'])
 def chat_messages(request, pk):
+    """List or post chat messages for a session."""
     try:
         session = StudySession.objects.get(pk=pk)
     except StudySession.DoesNotExist:
@@ -159,6 +166,7 @@ def chat_messages(request, pk):
 
 @api_view(['POST'])
 def submit_focus_score(request, pk):
+    """Record or update the focus score for the current user in a session."""
     try:
         session = StudySession.objects.get(pk=pk)
     except StudySession.DoesNotExist:
@@ -184,6 +192,7 @@ def submit_focus_score(request, pk):
 
 @api_view(['GET'])
 def session_focus_scores(request, pk):
+    """Return all focus scores for a session."""
     try:
         session = StudySession.objects.get(pk=pk)
     except StudySession.DoesNotExist:
@@ -196,7 +205,7 @@ def session_focus_scores(request, pk):
 
 @api_view(['GET'])
 def my_focus_history(request):
-    """All focus scores submitted by the current user, newest first, with session context."""
+    """Return all focus scores for the current user, newest first, with session context."""
     scores = (
         FocusScore.objects
         .filter(user=request.user)
@@ -209,7 +218,7 @@ def my_focus_history(request):
 
 @api_view(['POST', 'GET', 'DELETE'])
 def register_peer(request, pk):
-    """Register or retrieve peer IDs for mesh networking in live sessions."""
+    """Register, retrieve, or remove a peer ID for WebRTC mesh networking in a live session."""
     try:
         session = StudySession.objects.get(pk=pk)
     except StudySession.DoesNotExist:
@@ -229,7 +238,6 @@ def register_peer(request, pk):
         if not peer_id:
             return Response({'detail': 'peer_id is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Register or update peer ID for this user
         if not session.active_peer_ids:
             session.active_peer_ids = {}
         session.active_peer_ids[str(request.user.id)] = peer_id

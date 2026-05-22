@@ -1,6 +1,20 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { initPhoneDetector, destroyPhoneDetector, detectPhone, createAlertManager } from '../utils/phoneDetection'
 
+/**
+ * Tracks user focus during a live session using phone-detection inference.
+ * Runs a requestAnimationFrame loop that accumulates focused/distracted time
+ * and fires phone alerts via the alert manager.
+ *
+ * @returns {{
+ *   isTracking: boolean,
+ *   currentScore: number,
+ *   focusStats: object,
+ *   phoneAlert: string|null,
+ *   startTracking: (videoElement: HTMLVideoElement) => Promise<void>,
+ *   stopTracking: () => object
+ * }}
+ */
 export default function useFocusTracker() {
   const [isTracking, setIsTracking] = useState(false)
   const [currentScore, setCurrentScore] = useState(100)

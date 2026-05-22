@@ -17,8 +17,9 @@ function getSessionStartTime(dateStr, timeSlot) {
 }
 
 function isWithin5Min(dateStr, timeSlot) {
-  // TODO: Remove for production - allows testing anytime
-  return true
+  const start = getSessionStartTime(dateStr, timeSlot)
+  const diffMs = start - new Date()
+  return diffMs <= 5 * 60 * 1000 && diffMs > -2 * 60 * 60 * 1000
 }
 
 export default function SessionDetailPage() {

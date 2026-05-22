@@ -1,117 +1,66 @@
-# 🎓 AskUni
+# AskUni — Smart Collaborative Study Platform
 
-> **A smart, collaborative study platform designed specifically for university students.**
+AskUni is a full-stack web application that helps university students collaborate on coursework through a Q&A forum, real-time video study sessions, an AI-powered study planner, and a focus tracker that uses on-device computer vision to detect phone usage during sessions.
 
-AskUni is built to solve common student challenges like disorganized study sessions, lack of structured roadmaps, and the difficulty of finding reliable academic answers. With integrated Q&A forums, collaborative session booking, and cutting-edge AI attention monitoring, AskUni provides everything a student needs to stay focused and succeed.
-
----
-
-## ✨ Key Features
-
-### 💬 1. Interactive Q&A System
-
-- Ask module-specific academic questions.
-- Provide and receive structured answers from peers.
-- **Real-time Notifications:** Get instantly notified when someone answers your question.
-
-### 📅 2. Collaborative Study Sessions
-
-- **Create & Join:** Easily organize or join study groups based on specific modules and chapters.
-- **Time Planning:** Book structured time slots that fit your schedule.
-- **Smart Study Planner:** Input your availability, and the system recommends the best sessions and resources for you.
-
-### 🤖 3. AI-Powered Attention Monitoring (Camera feature)
-
-A cutting-edge focus tool built directly into the platform to help you stay on track during your study sessions.
-
-- **Face Mesh Tracking:** Tracks 468 facial landmarks in real-time.
-- **Hand Tracking:** Monitors hand movement to ensure engagement.
-- **Phone Detection:** Uses MediaPipe Object Detection (`tasks-vision`) to instantly detect if you pick up your smartphone, alerting you to put it away and stay focused.
+Built as a final project for ESTIN 2CP MI (2025/2026), the platform is deployed at **https://askuni-two.vercel.app**.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-**Frontend:**
-
-- React.js (v19)
-- Vite
-- Tailwind CSS
-- MediaPipe (Machine Learning / Computer Vision)
-
-**Backend:**
-
-- Django (Python)
-- Supabase / PostgreSQL
+| Layer | Technologies |
+|---|---|
+| **Frontend** | React 19, Vite, Tailwind CSS, React Router, Axios |
+| **Backend** | Django 6, Django REST Framework, SimpleJWT |
+| **Database** | PostgreSQL (production via Render), SQLite (local dev) |
+| **Realtime** | Supabase (chat subscriptions & file uploads) |
+| **AI / CV** | MediaPipe Tasks-Vision — ObjectDetector, FaceLandmarker, HandLandmarker |
+| **Video** | PeerJS (WebRTC mesh networking) |
+| **Deployment** | Vercel (frontend), Render (backend) |
 
 ---
 
-## 🚀 Getting Started
-
-Follow these steps to set up the project locally.
+## Running Locally
 
 ### Prerequisites
 
-- Node.js (v18+ recommended)
-- Python (v3.10+ recommended)
+- Python 3.11+
+- Node.js 20+
 
-### Frontend Setup
+### Backend
 
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-4. Open `http://localhost:5173` in your browser.
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
 
-### Backend Setup
+The API will be available at `http://localhost:8000/api/`.
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-3. Install Python dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Run migrations and start the server:
-   ```bash
-   python manage.py migrate
-   python manage.py runserver
-   ```
-5. The API will be available at `http://localhost:8000`.
+To seed demo data for a presentation:
+
+```bash
+python manage.py seed_demo
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The app will be available at `http://localhost:5173`. The Vite dev server proxies all `/api` requests to the Django backend, so no CORS configuration is needed for local development.
 
 ---
 
-## 📱 AI Tracking Modes
+## Authors
 
-The frontend includes a powerful `CameraSettings` page where you can test the AI integrations:
+- **Yanis** — Full-stack development
+- **Merieme Mohamed Faize** — Full-stack development
 
-- **Face Mesh:** Visualizes an intricate 468-point mesh over your face.
-- **Hand Tracking:** Maps 21 distinct coordinate points on your hands.
-- **Phone Detection:** Strictly isolated object detection mode that scans your webcam feed specifically for smartphones, triggering a focus alert if one is detected.
-
----
-
-## 🎯 Project Goals & MVP Status
-
-- **Goal:** Increase student collaboration, study time efficiency, and digital focus.
-- **Status:** AskUni is currently in the MVP phase. Core Q&A, authentication, basic session planning, and the AI Camera proof-of-concept have been implemented.
-
----
-
-feel free to pull requests if u see any bugs
-
-_Built by Yanis with ❤️ for focused and collaborative learning._
+**Institution:** ESTIN — 2CP MI — 2025/2026

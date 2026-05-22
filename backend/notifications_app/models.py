@@ -4,7 +4,11 @@ from qa.models import Question
 
 
 class Notification(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
+    """An in-app notification delivered to a user (e.g. someone answered their question)."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications'
+    )
     message = models.CharField(max_length=255)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)
     is_read = models.BooleanField(default=False)

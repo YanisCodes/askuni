@@ -8,6 +8,7 @@ from qa.serializers import ResourceSerializer
 
 @api_view(['POST'])
 def suggest(request):
+    """Return matching sessions and a recommended resource for a given module and time slots."""
     module_id = request.data.get('module_id')
     time_slots = request.data.get('time_slots', [])
 

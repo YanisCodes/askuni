@@ -1,3 +1,4 @@
+// Polls and manages in-app notifications with a 30-second refresh interval.
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from '../services/api';
 import { useAuth } from './AuthContext';

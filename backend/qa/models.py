@@ -3,6 +3,8 @@ from django.conf import settings
 
 
 class Module(models.Model):
+    """A course module that questions and sessions are grouped under."""
+
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=20, unique=True)
 
@@ -11,6 +13,8 @@ class Module(models.Model):
 
 
 class Question(models.Model):
+    """A student-authored question posted to a module's Q&A thread."""
+
     title = models.CharField(max_length=255)
     description = models.TextField()
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='questions')
@@ -25,6 +29,8 @@ class Question(models.Model):
 
 
 class Answer(models.Model):
+    """A response to a Question, optionally voted on by peers."""
+
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
     content = models.TextField()
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='answers')
@@ -38,6 +44,8 @@ class Answer(models.Model):
 
 
 class QuestionVote(models.Model):
+    """An upvote or downvote cast by a user on a question."""
+
     VOTE_CHOICES = [(1, 'Upvote'), (-1, 'Downvote')]
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='votes')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='question_votes')
@@ -48,6 +56,8 @@ class QuestionVote(models.Model):
 
 
 class AnswerVote(models.Model):
+    """An upvote or downvote cast by a user on an answer."""
+
     VOTE_CHOICES = [(1, 'Upvote'), (-1, 'Downvote')]
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='votes')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='answer_votes')
@@ -58,6 +68,8 @@ class AnswerVote(models.Model):
 
 
 class Resource(models.Model):
+    """A recommended learning resource (book, video, etc.) linked to a module."""
+
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='resources')
     title = models.CharField(max_length=255)
     author = models.CharField(max_length=255)

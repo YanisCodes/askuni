@@ -7,6 +7,7 @@ from .serializers import NotificationSerializer
 
 @api_view(['GET'])
 def notification_list(request):
+    """Return all notifications for the current user, newest first."""
     notifications = Notification.objects.filter(user=request.user)
     serializer = NotificationSerializer(notifications, many=True)
     return Response(serializer.data)
@@ -14,6 +15,7 @@ def notification_list(request):
 
 @api_view(['PATCH'])
 def notification_mark_read(request, pk):
+    """Mark a single notification as read."""
     try:
         notification = Notification.objects.get(pk=pk, user=request.user)
     except Notification.DoesNotExist:
@@ -25,5 +27,6 @@ def notification_mark_read(request, pk):
 
 @api_view(['POST'])
 def mark_all_read(request):
+    """Mark all unread notifications as read for the current user."""
     Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
     return Response({'status': 'ok'})

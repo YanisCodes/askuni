@@ -65,12 +65,8 @@ The app will be available at `http://localhost:5173`.
 
 ---
 
-## Authors
+## Author
 
-- **Yanis Oukaci** — Full-stack development
-- **Merième Mohamed Faize** — Full-stack development
-- **Ali Belaidi** -- Backend Developer
-- **Tahar Aitabbas** -- Backend Developer
-- **Ihab Djedouani** -- Backend Developer
+- **YanisCodes** — Full-stack development
 
-**Institution:** ESTIN — 2CP MI — 2025/2026
+— 2025/2026
